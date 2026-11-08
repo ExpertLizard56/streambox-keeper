@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'io.github.expertlizard56.boxkeeper'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'io.github.expertlizard56.boxkeeper'
+        // Android 9 and newer: every Google TV box, and Android TV boxes from about 2019 on.
+        minSdk 28
+        targetSdk 34
+        // Set by hand for each release; the update check compares it with the newest GitHub release.
+        versionCode 1
+        versionName '0.1.0'
+    }
+
+    signingConfigs {
+        // The release key lives outside the project (keystore.properties, never committed): losing it means
+        // installed copies can't be updated, so it's kept safe by the maintainer.
+        release {
+            def props = new Properties()
+            def file = rootProject.file('keystore.properties')
+            if (file.exists()) {
+                file.withInputStream { props.load(it) }
+                storeFile = rootProject.file(props['storeFile'])
+                storePassword = props['storePassword']
+                keyAlias = props['keyAlias']
+                keyPassword = props['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+            signingConfig rootProject.file('keystore.properties').exists() ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // ADB client: the box's own ADB (SelfAdb) and the Fire TV connection.
+    implementation('dev.mobile:dadb:1.2.7') {
+        // Its published dependencies wrongly include its test tools.
+        exclude group: 'org.junit.platform'
+        exclude group: 'org.junit.jupiter'
+        exclude group: 'junit'
+    }
+}

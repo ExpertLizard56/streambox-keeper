@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The TV home screen tile: the icon on a dark 16:9 banner. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="320dp" android:height="180dp" />
+            <solid android:color="#FF10121A" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/icon" android:gravity="center" android:width="120dp" android:height="120dp" />
+</layer-list>
