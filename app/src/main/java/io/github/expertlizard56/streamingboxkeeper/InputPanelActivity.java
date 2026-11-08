@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -25,7 +25,7 @@ import java.util.List;
  * focused. Opened by the remote's Input or star button (LinkService, or the system's VIEW_INPUTS that
  * the launcher's InputKeyService starts); from another input or the TV's own home screen LinkService first brings the
  * TV back to the box (the box can only draw over its own input) and says where it was ("from"). Arrows pick, OK
- * switches the TV; Back or the same button again closes, and takes the TV back to where it was. `am start -n io.github.expertlizard56.boxkeeper/.InputPanelActivity --ez demo true` shows sample inputs on a
+ * switches the TV; Back or the same button again closes, and takes the TV back to where it was. `am start -n io.github.expertlizard56.streamingboxkeeper/.InputPanelActivity --ez demo true` shows sample inputs on a
  * box with no TV (the emulator), to check the look.
  */
 public class InputPanelActivity extends Activity {

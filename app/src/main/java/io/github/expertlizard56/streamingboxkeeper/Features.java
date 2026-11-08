@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,9 +17,9 @@ final class Features {
     static final String CLEANUP = "cleanup";
     /** At most once a week, a restart at night if memory stays full and the TV is off (Jobs.restartIfNeeded). */
     static final String RESTART = "restart";
-    /** Sideloaded apps from GitHub (Jobs.APPS) kept up to date while the box sleeps. */
+    /** The apps the person listed (AppSources) kept up to date while the box sleeps. */
     static final String APP_UPDATES = "appUpdates";
-    /** Box Keeper updates itself from its GitHub releases (Updater). */
+    /** Streaming Box Keeper updates itself from its GitHub releases (Updater). */
     static final String SELF_UPDATE = "selfUpdate";
 
     static final String[] ALL = {REMOTE, WIFI, CLEANUP, RESTART, APP_UPDATES, SELF_UPDATE};

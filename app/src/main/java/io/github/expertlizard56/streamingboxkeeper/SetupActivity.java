@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -10,7 +10,7 @@ import android.widget.TextView;
 import java.util.List;
 
 /**
- * The app's tile on the home screen: what Box Keeper last did for the box, and which TV this box is plugged into, for when TvFinder can't tell alone (several TVs on the network): lists the TVs it
+ * The app's tile on the home screen: what Streaming Box Keeper last did for the box, and which TV this box is plugged into, for when TvFinder can't tell alone (several TVs on the network): lists the TVs it
  * finds and saves the one picked. Also the app's tile on the home screen, showing what's set up now. Needs the box's
  * system access for the HDMI port, so it offers that first (the box asks once, "Allow USB debugging?").
  */

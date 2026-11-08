@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'io.github.expertlizard56.boxkeeper'
+    namespace 'io.github.expertlizard56.streamingboxkeeper'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'io.github.expertlizard56.boxkeeper'
+        applicationId 'io.github.expertlizard56.streamingboxkeeper'
         // Android 9 and newer: every Google TV box, and Android TV boxes from about 2019 on.
         minSdk 28
         targetSdk 34

@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.content.Context;
 import android.view.KeyEvent;

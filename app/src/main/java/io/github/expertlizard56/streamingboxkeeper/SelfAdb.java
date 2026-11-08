@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.content.Context;
 import dadb.AdbKeyPair;
@@ -50,13 +50,24 @@ public final class SelfAdb {
         });
     }
 
-    /** True if this app may use the box's ADB now (asks on the box's screen the first time). */
+    /**
+     * True if this app may use the box's ADB now. The first time, this makes the box ask on its screen ("Allow USB
+     * debugging?") and waits up to 15 s for the answer, so only call it when the person asked for it (knownAllowed
+     * says whether it's been allowed before, without asking).
+     */
     public static boolean allowed(Context context) {
         try {
-            return shell(context, "echo ok").trim().endsWith("ok");
+            boolean ok = shell(context, "echo ok").trim().endsWith("ok");
+            context.getSharedPreferences("keeper", Context.MODE_PRIVATE).edit().putBoolean("systemAccess", ok).apply();
+            return ok;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /** Whether the box has allowed this app before (set by allowed), without connecting or asking. */
+    public static boolean knownAllowed(Context context) {
+        return context.getSharedPreferences("keeper", Context.MODE_PRIVATE).getBoolean("systemAccess", false);
     }
 
     /**

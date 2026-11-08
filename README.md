@@ -1,4 +1,4 @@
-# Box Keeper
+# Streaming Box Keeper
 
 A free app for Google TV and Android TV boxes that makes the box's remote run your TV too, and quietly looks after
 the box while it sleeps.
@@ -11,11 +11,13 @@ the box while it sleeps.
 - **A full-screen input menu.** Press the remote's Input button: every input your TV has, by the names you gave
   them, with the one you're on highlighted. Pick one with OK; Back takes you back where you were.
 - **Back on Wi-Fi after a drop.** Some boxes don't rejoin Wi-Fi by themselves while they sleep, so after a router
-  restart they stay offline until someone wakes them. Box Keeper rejoins within 5 minutes, screen off.
+  restart they stay offline until someone wakes them. Streaming Box Keeper rejoins within 5 minutes, screen off.
 - **Nightly cleanup.** Closes background apps at night while the box sleeps, so it stays quick.
 - **Weekly restart when needed.** At night, only if memory stays full after the cleanup, and never while the TV
   is on.
-- **App updates (optional).** Keeps SmartTube up to date from its GitHub releases, installed while the box sleeps.
+- **App updates (optional).** Keeps any app you choose up to date: give it the app's Downloader code (the numbers
+  you'd type into the Downloader app), its GitHub page, or a link to its .apk. Checked once a day, installed at night
+  while the box sleeps. It only installs the same app, newer, and Android refuses an update signed by anyone else.
 
 Every feature has its own switch on the app's screen. Nothing happens on screen while you're watching.
 
@@ -25,20 +27,20 @@ Every feature has its own switch on the app's screen. Nothing happens on screen 
 - For the TV remote: a Roku TV or Fire TV smart TV on the same network.
   - Roku: Settings > System > Advanced system settings > Control by mobile apps > Network access: **Enabled**.
   - Fire TV: Settings > My Fire TV > Developer options > ADB debugging: **On**. The TV asks once to allow the box.
-- **Network debugging on the box.** Box Keeper uses the box's own debugging connection to do what normal apps
+- **Network debugging on the box.** Streaming Box Keeper uses the box's own debugging connection to do what normal apps
   can't (rejoin Wi-Fi while asleep, install updates, read which HDMI port it's on). It only ever connects to the box
   itself. The app's screen walks you through it.
 
 ## Install
 
 1. On the box, install **Downloader** (by AFTVnews) from the Play Store.
-2. In Downloader, open the newest `box-keeper-<version>.apk` from this page's
-   [Releases](https://github.com/ExpertLizard56/box-keeper/releases), and install it.
-3. Open **Box Keeper** from your apps and follow its three set-up steps.
+2. In Downloader, open the newest `streaming-box-keeper-<version>.apk` from this page's
+   [Releases](https://github.com/ExpertLizard56/streaming-box-keeper/releases), and install it.
+3. Open **Streaming Box Keeper** from your apps and follow its three set-up steps.
 
 ## Privacy
 
-No accounts, ads, analytics or tracking. Box Keeper talks only to your own box, your TV on your home network, and
+No accounts, ads, analytics or tracking. Streaming Box Keeper talks only to your own box, your TV on your home network, and
 GitHub (to check for updates, and only if those switches are on). See [PRIVACY.md](PRIVACY.md).
 
 ## Building it yourself

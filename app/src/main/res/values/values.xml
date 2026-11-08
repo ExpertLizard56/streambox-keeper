@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Box Keeper</string>
+    <string name="app_name">Streaming Box Keeper</string>
     <string name="description">Sends the remote\'s arrows, OK and Back to the TV while the TV shows something other than this box.</string>
 
     <!-- The input menu: full screen and solid. -->

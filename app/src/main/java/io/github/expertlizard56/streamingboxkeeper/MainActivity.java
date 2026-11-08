@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -46,14 +46,15 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         column.removeAllViews();
-        TextView title = text("Box Keeper", 36, Color.WHITE);
+        TextView title = text("Streaming Box Keeper", 36, Color.WHITE);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         column.addView(title);
         TextView loading = text("Checking…", 18, 0x8CFFFFFF);
         column.addView(loading);
         new Thread(() -> {
             boolean debugging = adbPortOpen();
-            boolean allowed = debugging && SelfAdb.allowed(this);
+            // Checked again only if it was allowed before: a first check would make the box ask on its own.
+            boolean allowed = debugging && SelfAdb.knownAllowed(this) && SelfAdb.allowed(this);
             runOnUiThread(() -> {
                 column.removeView(loading);
                 build(debugging, allowed);
@@ -74,7 +75,13 @@ public class MainActivity extends Activity {
         } else if (!allowed) {
             first = step(false, "Allow system access",
                     "Press the button: the box asks \"Allow USB debugging?\". Tick Always allow, then Allow.",
-                    "Ask now", v -> recreate());
+                    "Ask now", v -> {
+                        ((TextView) v).setText("Answer on the screen…");
+                        new Thread(() -> {
+                            SelfAdb.allowed(this);  // the box asks; waits for the answer
+                            runOnUiThread(this::recreate);
+                        }, "ask").start();
+                    });
         } else {
             step(true, "System access", "Allowed.", null, null);
         }
@@ -82,8 +89,8 @@ public class MainActivity extends Activity {
         boolean remoteOn = remoteServiceOn();
         if (!remoteOn) {
             View b = step(false, "Turn on the TV remote",
-                    allowed ? "Press the button to switch on Box Keeper's remote helper."
-                            : "Settings > Accessibility > Box Keeper: turn it on.",
+                    allowed ? "Press the button to switch on Streaming Box Keeper's remote helper."
+                            : "Settings > Accessibility > Streaming Box Keeper: turn it on.",
                     allowed ? "Turn on" : "Open Accessibility", v -> {
                         if (allowed) new Thread(() -> {
                             enableRemoteService();
@@ -98,7 +105,7 @@ public class MainActivity extends Activity {
         // 3. Which TV: found alone when it's clear, else picked from a list.
         TvConfig tv = TvConfig.load(this);
         View pick = step(tv != null, tv == null ? "Choose your TV" : "Your TV",
-                tv == null ? "A Roku TV or Fire TV on your network. Box Keeper usually finds it by itself."
+                tv == null ? "A Roku TV or Fire TV on your network. Streaming Box Keeper usually finds it by itself."
                         : ("fire".equals(tv.kind) ? "Fire TV" : "Roku TV") + " at " + tv.address,
                 tv == null ? "Find my TV" : "Change", v -> startActivity(new Intent(this, SetupActivity.class)));
         if (first == null && tv == null && allowed) first = pick;
@@ -111,8 +118,12 @@ public class MainActivity extends Activity {
         feature(Features.CLEANUP, "Nightly cleanup", "Closes background apps at night while the box sleeps.");
         feature(Features.RESTART, "Weekly restart when needed",
                 "At night, only if memory stays full and the TV is off.");
-        feature(Features.APP_UPDATES, "Keep apps up to date", "SmartTube, from its GitHub releases, while the box sleeps.");
-        feature(Features.SELF_UPDATE, "Update Box Keeper", "New versions from GitHub, installed automatically.");
+        feature(Features.APP_UPDATES, "Keep apps up to date",
+                "Apps you choose, from their GitHub pages or download links, installed at night.");
+        int listed = AppSources.load(this).size();
+        step(listed > 0, "Apps to keep updated", listed == 0 ? "None yet." : listed + (listed == 1 ? " app." : " apps."),
+                "Choose apps", v -> startActivity(new Intent(this, AppsActivity.class)));
+        feature(Features.SELF_UPDATE, "Update Streaming Box Keeper", "New versions from GitHub, installed automatically.");
 
         column.addView(heading("Last done"));
         android.content.SharedPreferences prefs = getSharedPreferences("keeper", MODE_PRIVATE);
@@ -178,7 +189,7 @@ public class MainActivity extends Activity {
         return on != null && on.contains(getPackageName() + "/");
     }
 
-    /** Adds Box Keeper's remote helper to the switched-on accessibility services, keeping the others. */
+    /** Adds Streaming Box Keeper's remote helper to the switched-on accessibility services, keeping the others. */
     private void enableRemoteService() {
         String on = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         String mine = getPackageName() + "/.LinkService";

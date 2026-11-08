@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.accessibilityservice.AccessibilityService;
 import android.content.Context;
@@ -94,7 +94,7 @@ public class LinkService extends AccessibilityService {
     /** The remote's state in a line: which TV, whether it answers, and a setting that stops it working. */
     static String describe(Context context) {
         TvConfig config = TvConfig.load(context);
-        if (config == null) return "not set up yet (open Box Keeper on this box to pick the TV)";
+        if (config == null) return "not set up yet (open Streaming Box Keeper on this box to pick the TV)";
         String which = ("fire".equals(config.kind) ? "Fire TV" : "Roku TV") + " at " + config.address;
         Tv now = tv;
         if (!running || now == null) return which + ", but the remote part is off (its accessibility service isn't on)";
@@ -111,7 +111,7 @@ public class LinkService extends AccessibilityService {
     static String problem(Context context) {
         if (TvConfig.load(context) == null) return null;
         Tv now = tv;
-        if (!running || now == null) return "the TV remote part is off: turn Box Keeper on in Settings > Accessibility";
+        if (!running || now == null) return "the TV remote part is off: turn Streaming Box Keeper on in Settings > Accessibility";
         return now.problem();
     }
 

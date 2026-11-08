@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,6 +18,6 @@ public class TestRun extends BroadcastReceiver {
             } finally {
                 done.finish();
             }
-        }, "box-keeper-test").start();
+        }, "streaming-box-keeper-test").start();
     }
 }

@@ -1,4 +1,4 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -21,7 +21,7 @@ import java.util.Collections;
  * request isn't ignored: every 5 minutes a wake-up alarm checks the network, and offline it asks for "cmd wifi
  * start-scan" through the box's own ADB (SelfAdb), up to a minute; Android then rejoins. The screen stays off and the
  * TV is never touched. Connected, on Wi-Fi or Ethernet, it runs the upkeep jobs (Jobs), and once a day looks for a
- * newer Box Keeper on GitHub (Updater, Features.SELF_UPDATE).
+ * newer Streaming Box Keeper on GitHub (Updater, Features.SELF_UPDATE).
  */
 public class Check extends BroadcastReceiver {
 
@@ -64,7 +64,7 @@ public class Check extends BroadcastReceiver {
             } finally {
                 if (awake.isHeld()) awake.release();
             }
-        }, "box-keeper").start();
+        }, "streaming-box-keeper").start();
     }
 
     private static void rejoin(Context context) {

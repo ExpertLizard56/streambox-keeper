@@ -1,9 +1,8 @@
-package io.github.expertlizard56.boxkeeper;
+package io.github.expertlizard56.streamingboxkeeper;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 import java.io.File;
@@ -15,15 +14,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * The box's upkeep, run from Check every 5 minutes while the box is online. Each job keeps when it last ran, and
  * anything that could be noticed only happens while the box sleeps. Each can be switched off on the app's screen
  * (Features).
- *  - App updates (off until switched on): once a day, the newest release on GitHub of the apps in APPS that are on this
- *    box, for this box's processor type; installed while the box sleeps. Android refuses one signed by anyone else.
+ *  - App updates (off until switched on): once a day, the apps the person listed (AppSources: a GitHub page or a
+ *    direct .apk link each), installed while the box sleeps. Android refuses one signed by anyone else.
  *  - Cleanup: once a night, 3-6 AM, asleep: close the background apps (am kill-all). After days on, a box can have
  *    hundreds of MB in swap and playback stutters; this frees most of it.
  *  - Restart: at most once a week, after that night's cleanup, if swap is still over 250 MB, asleep, and the TV isn't
@@ -40,14 +38,6 @@ final class Jobs {
     private static final long DAY_MS = 24 * HOUR_MS;
     private static final long RESTART_AFTER_MS = 7 * DAY_MS;
     private static final long SWAP_MB_BEFORE_RESTART = 250;
-    /**
-     * Apps kept up to date when the person switches app updates on: package, name, GitHub repo, and the release file's
-     * name with %s where the processor type goes (arm64-v8a, armeabi-v7a, x86...).
-     */
-    static final String[][] APPS = {
-            {"org.smarttube.stable", "SmartTube", "yuliskov/SmartTube", "SmartTube_stable_[\\d.]+_%s\\.apk"},
-    };
-
     private Jobs() {
     }
 
@@ -59,8 +49,11 @@ final class Jobs {
         boolean night = night() || force;
         restoreOneTouchPlay(context, prefs);
         if (Features.on(context, Features.APP_UPDATES)) {
-            if (due(prefs, "appsCheckedAt", DAY_MS, now, force)) findAppUpdates(context, prefs);
-            if (asleep) installPending(context, prefs);
+            if (due(prefs, "appsCheckedAt", DAY_MS, now, force)) {
+                SelfAdb.allowNetworkWhileAsleep(context);
+                AppSources.findUpdates(context);
+            }
+            if (asleep) AppSources.installPending(context);
         }
         long tidiedAt = prefs.getLong("tidiedAt", 0);
         // A cleanup that never wrote its result isn't asked about for ever (each look opens the box's ADB).
@@ -73,15 +66,15 @@ final class Jobs {
 
     /**
      * One job now, whatever the hour or state, for testing from a computer:
-     * `adb shell am broadcast -a io.github.expertlizard56.boxkeeper.RUN --es job tidy|tidy-result|apps|detect|update|restart
-     * -n io.github.expertlizard56.boxkeeper/.TestRun` ("restart" really restarts the box). Only the system shell may send it.
+     * `adb shell am broadcast -a io.github.expertlizard56.streamingboxkeeper.RUN --es job tidy|tidy-result|apps|detect|update|restart
+     * -n io.github.expertlizard56.streamingboxkeeper/.TestRun` ("restart" really restarts the box). Only the system shell may send it.
      */
     static void runOne(Context context, String job) {
         SharedPreferences prefs = context.getSharedPreferences("keeper", Context.MODE_PRIVATE);
         switch (job == null ? "" : job) {
             case "tidy": prefs.edit().putLong("tidiedAt", System.currentTimeMillis()).apply(); tidy(context, prefs); break;
             case "tidy-result": readTidy(context, prefs); break;
-            case "apps": findAppUpdates(context, prefs); installPending(context, prefs); break;
+            case "apps": AppSources.findUpdates(context); AppSources.installPending(context); break;
             case "detect": detect(context); break;
             case "update": Updater.check(context); break;
             case "restart": restartIfNeeded(context, prefs, System.currentTimeMillis(), true); break;
@@ -133,86 +126,11 @@ final class Jobs {
 
     // --- app updates ---
 
-    private static void findAppUpdates(Context context, SharedPreferences prefs) {
-        SelfAdb.allowNetworkWhileAsleep(context);
-        for (String[] app : APPS) {
-            String installed = installedVersion(context, app[0]);
-            if (installed == null) continue;  // not on this box
-            try {
-                JSONObject release = new JSONObject(get("https://api.github.com/repos/" + app[2] + "/releases/latest"));
-                String tag = release.getString("tag_name");
-                if (compare(tag, installed) <= 0 || tag.equals(prefs.getString("refused." + app[0], null))) continue;
-                JSONObject asset = assetFor(release.getJSONArray("assets"), app[3]);
-                if (asset == null) {
-                    Log.i(TAG, app[1] + " " + tag + " has no file for this box");
-                    continue;
-                }
-                File apk = new File(context.getCacheDir(), app[0] + ".apk");
-                download(asset.getString("browser_download_url"), apk);
-                if (!digestMatches(asset, apk)) {
-                    Log.w(TAG, app[1] + " " + tag + ": the download doesn't match GitHub's checksum; not installing");
-                    apk.delete();
-                    continue;
-                }
-                prefs.edit().putString("pending." + app[0], tag).apply();
-                Log.i(TAG, app[1] + " " + installed + " -> " + tag + " downloaded; installs while the box sleeps");
-            } catch (Exception e) {
-                Log.i(TAG, app[1] + ": no update now (" + e.getMessage() + ")");
-            }
-        }
-    }
-
-    /** The release file for this box's processor: its first supported type that has a file, else a universal one. */
-    static JSONObject assetFor(JSONArray assets, String pattern) throws Exception {
-        String[] abis = Build.SUPPORTED_ABIS;
-        String[] wanted = new String[abis.length + 1];
-        System.arraycopy(abis, 0, wanted, 0, abis.length);
-        wanted[abis.length] = "universal";
-        for (String abi : wanted) {
-            String name = String.format(pattern, Pattern.quote(abi));
-            for (int i = 0; i < assets.length(); i++) {
-                JSONObject asset = assets.getJSONObject(i);
-                if (asset.getString("name").matches(name)) return asset;
-            }
-        }
-        return null;
-    }
-
     /** GitHub's own SHA-256 of the file, when it gives one ("digest"), checked against the download. */
     static boolean digestMatches(JSONObject asset, File file) throws Exception {
         String digest = asset.optString("digest", "");
         if (!digest.startsWith("sha256:")) return true;
         return Updater.sha256(file).equalsIgnoreCase(digest.substring("sha256:".length()));
-    }
-
-    private static void installPending(Context context, SharedPreferences prefs) {
-        for (String[] app : APPS) {
-            String tag = prefs.getString("pending." + app[0], null);
-            if (tag == null) continue;
-            String result = install(context, prefs, app[0], app[1] + " " + tag);
-            if (result == null) continue;
-            SharedPreferences.Editor edit = prefs.edit().remove("pending." + app[0]);
-            // Android said no (another signer, an older version): trying again won't help until a new release.
-            if (result.contains("Failure")) edit.putString("refused." + app[0], tag);
-            edit.apply();
-        }
-    }
-
-    /** Installs pkg's downloaded update: Android's answer, or null to try again at the next check. */
-    private static String install(Context context, SharedPreferences prefs, String pkg, String what) {
-        SelfAdb.allowNetworkWhileAsleep(context);  // pushing the APK goes through the box's ADB, which deep sleep cuts off
-        File apk = new File(context.getCacheDir(), pkg + ".apk");
-        try {
-            String result = apk.exists() ? SelfAdb.install(context, apk) : "the download is gone";
-            Log.i(TAG, what + ": " + result);
-            if (!result.contains("Success") && !result.contains("Failure") && apk.exists()) return null;
-            apk.delete();
-            if (result.contains("Success")) note(prefs, "lastAppUpdate", what);
-            return result;
-        } catch (Exception e) {
-            Log.i(TAG, what + " not installed yet: " + e);
-            return null;
-        }
     }
 
     static String installedVersion(Context context, String pkg) {
@@ -246,7 +164,7 @@ final class Jobs {
 
     // --- cleanup and restart ---
 
-    private static final String TIDY_RESULT = "/data/local/tmp/box-keeper-tidy";
+    private static final String TIDY_RESULT = "/data/local/tmp/streaming-box-keeper-tidy";
 
     /**
      * Closes the background apps. "am kill-all" can close this app too (it's a background app between checks), so
@@ -348,7 +266,7 @@ final class Jobs {
         HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
         http.setConnectTimeout(10000);
         http.setReadTimeout(20000);
-        http.setRequestProperty("User-Agent", "box-keeper");
+        http.setRequestProperty("User-Agent", "streaming-box-keeper");
         try (InputStream in = http.getInputStream()) {
             return new String(Streams.readAll(in), StandardCharsets.UTF_8);
         } finally {
