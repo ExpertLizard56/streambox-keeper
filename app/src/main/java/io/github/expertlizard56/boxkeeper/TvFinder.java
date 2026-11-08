@@ -25,12 +25,12 @@ import java.util.regex.Pattern;
  * address (the box's own ADB, `dumpsys hdmi_control`: 0x4000 is HDMI 4). The TVs come from the network, which knows
  * them better than HDMI does: Roku TVs answer an SSDP search and report their model, Fire TV smart TVs announce
  * themselves (mDNS _amzn-wplay._tcp). Only TVs that are on are found (a Roku fully off stops answering, a Fire TV in
- * standby stops announcing). While its TV is on, HDMI-CEC does give the TV's name (Nov 8: the bedroom box read
- * "6Series50", the Roku's model 6Series-50; the living room box "Amazon FireTV"), so a TV whose kind or model doesn't
+ * standby stops announcing). While its TV is on, HDMI-CEC does give the TV's name (a Hisense Roku TV says
+ * "6Series50", its model being 6Series-50; a Fire TV "Amazon FireTV"), so a TV whose kind or model doesn't
  * match it isn't this box's. Ruled out too, while the box is on screen (the HDMI-CEC active source): a Roku that's off
  * or showing something else. Of the rest, one TV left is the one; else a Roku showing this box's input, else the one TV
- * the HDMI name matches. Otherwise the setup screen asks, once (a lone TV found is never taken on trust: on Nov 8 the
- * bedroom box missed its just-switched-on Roku and found only the living room's Fire TV). Fire TV input names are HW(port + 3), from the living room's HDMI 4 = HW7.
+ * the HDMI name matches. Otherwise the setup screen asks, once (a lone TV found is never taken on trust: a box once missed
+ * its just-switched-on Roku and found only another room's Fire TV). Fire TV input names are HW(port + 3), HDMI 4 = HW7 on the Fire TVs tested.
  */
 final class TvFinder {
 
@@ -205,7 +205,7 @@ final class TvFinder {
             long start = System.currentTimeMillis();
             int asked = 0;
             // Asked three times over 3 seconds, listening for 6: a TV just switched on can miss one or answer late
-            // (Nov 8, the bedroom Roku).
+            // (seen with a Roku TV).
             while (System.currentTimeMillis() - start < 6000) {
                 if (asked < 3 && System.currentTimeMillis() - start >= asked * 1500L) {
                     socket.send(ask);

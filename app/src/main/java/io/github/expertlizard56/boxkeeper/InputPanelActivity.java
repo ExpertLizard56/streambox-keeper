@@ -93,8 +93,8 @@ public class InputPanelActivity extends Activity {
         if (tv != null) {
             items = tv.inputs();
         } else if (getIntent().getBooleanExtra("demo", false)) {
-            items = Arrays.asList(new String[] {Tv.BOX, "Living Room TV"}, new String[] {"tvinput.hdmi2", "Desktop PC"},
-                    new String[] {"tvinput.hdmi3", "Raspberry Pi"}, new String[] {"tvinput.cvbs", "AV"},
+            items = Arrays.asList(new String[] {Tv.BOX, "Streaming Box"}, new String[] {"tvinput.hdmi2", "Game Console"},
+                    new String[] {"tvinput.hdmi3", "PC"}, new String[] {"tvinput.cvbs", "AV"},
                     new String[] {"tvinput.dtv", "Live TV"}, new String[] {Tv.HOME, "Roku Home"});
         } else {
             runOnUiThread(this::finish);
