@@ -9,7 +9,8 @@ import android.view.accessibility.AccessibilityManager;
 
 /**
  * Lets a button-remapping app (Button Mapper, or any other) have the remote's buttons: whatever it maps wins, except
- * the Input button, which stays this app's. Every app that filters remote keys sees every press, so the trouble is two
+ * the Input button (InputKey), which stays this app's: it's taken before the box sees it, and if a remapping app acts
+ * on it too and pushes the input menu away, LinkService brings the menu back. Every app that filters remote keys sees every press, so the trouble is two
  * acting on one button, like the CleanYourTV home screen's own button helpers (InputKeyService: the YouTube button;
  * HomeKeyService: the Settings button) and the remapping app. While another app that filters keys is switched on,
  * those helpers are switched off; when it's switched off again, the ones switched off come back. This app's own
@@ -27,7 +28,7 @@ final class RemapApps {
     /** Checks and switches the home screen's helpers off or back on to match. Blocks briefly; off the main thread. */
     static void check(Context context) {
         SharedPreferences prefs = context.getSharedPreferences("keeper", Context.MODE_PRIVATE);
-        boolean remapper = remapAppOn(context);
+        boolean remapper = on(context);
         String switchedOff = prefs.getString("launcherHelpersOff", "");
         if (remapper == !switchedOff.isEmpty()) return;
         String now = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
@@ -54,7 +55,7 @@ final class RemapApps {
     }
 
     /** Another switched-on accessibility app that filters remote keys (not this app, not the home screen). */
-    private static boolean remapAppOn(Context context) {
+    static boolean on(Context context) {
         AccessibilityManager manager = context.getSystemService(AccessibilityManager.class);
         for (AccessibilityServiceInfo info : manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
             String pkg = info.getResolveInfo().serviceInfo.packageName;

@@ -20,6 +20,10 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- Google TV's own set-up for the remote's power and volume buttons (RemoteSetup). -->
+        <intent>
+            <action android:name="com.google.android.tv.IR_WIZARD" />
+        </intent>
     </queries>
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -47,6 +51,12 @@
         <!-- The apps kept up to date, from the main screen. -->
         <activity
             android:name=".AppsActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+
+        <!-- Picking the Input button, from the main screen. -->
+        <activity
+            android:name=".InputKeyActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Material.NoActionBar" />
 

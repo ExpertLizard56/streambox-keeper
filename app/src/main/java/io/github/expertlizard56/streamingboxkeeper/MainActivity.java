@@ -19,8 +19,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
- * The app's screen: the three set-up steps (system access, the TV remote, which TV), each done or with a button that
- * does it or says how; a switch for each feature (Features); and what the jobs last did. Opening it also starts the
+ * The app's screen: the set-up steps (system access, the TV remote, which TV, the remote's own power and volume, the
+ * Input button), each done or with a button that does it or says how; a switch for each feature (Features); and what the jobs last did. Opening it also starts the
  * upkeep (it starts after every boot too).
  */
 public class MainActivity extends Activity {
@@ -55,14 +55,15 @@ public class MainActivity extends Activity {
             boolean debugging = adbPortOpen();
             // Checked again only if it was allowed before: a first check would make the box ask on its own.
             boolean allowed = debugging && SelfAdb.knownAllowed(this) && SelfAdb.allowed(this);
+            RemoteSetup remote = allowed ? RemoteSetup.read(this) : null;
             runOnUiThread(() -> {
                 column.removeView(loading);
-                build(debugging, allowed);
+                build(debugging, allowed, remote);
             });
         }, "status").start();
     }
 
-    private void build(boolean debugging, boolean allowed) {
+    private void build(boolean debugging, boolean allowed, RemoteSetup remote) {
         View first = null;
 
         column.addView(heading("Set up"));
@@ -109,6 +110,23 @@ public class MainActivity extends Activity {
                         : ("fire".equals(tv.kind) ? "Fire TV" : "Roku TV") + " at " + tv.address,
                 tv == null ? "Find my TV" : "Change", v -> startActivity(new Intent(this, SetupActivity.class)));
         if (first == null && tv == null && allowed) first = pick;
+        // 4. The remote's own power and volume buttons, set up in Google TV's own steps (RemoteSetup).
+        if (RemoteSetup.available(this)) {
+            boolean done = remote != null && remote.done();
+            String detail = remote == null
+                    ? "So the remote turns the TV on and off and sets its volume. Google TV asks which TV (or soundbar) you have."
+                    : "Power " + RemoteSetup.words(remote.power) + ", volume " + RemoteSetup.words(remote.volume) + ".";
+            View b = step(done, done ? "Remote's power and volume" : "Set up the remote's power and volume", detail,
+                    done ? "Change" : "Set up", v -> openSettings(RemoteSetup.WIZARD));
+            if (first == null && !done) first = b;
+        }
+        // 5. Which button opens the input menu (InputKey); button-remapping apps can't take it.
+        String input = "Opens the input menu: " + InputKey.describe(this) + ". Button-remapping apps can't take it.";
+        if (remote != null && remote.inputByInfrared() && InputKey.picked(this) == InputKey.USUAL) {
+            input += " The remote sends its Input button to the TV by infrared, so the box may not see it: pick another"
+                    + " button, or change Input in the remote's set-up.";
+        }
+        step(true, "Input button", input, "Change", v -> startActivity(new Intent(this, InputKeyActivity.class)));
 
         column.addView(heading("Features"));
         View firstSwitch = null;

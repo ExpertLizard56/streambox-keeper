@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
  * Makes the box's remote drive the TV it is plugged into, without a mode button. The TV is asked twice a second what
  * it shows. While it shows this box, every key works as usual. While it shows anything else (its home screen, its
  * apps, antenna TV, another input), the arrows, OK, Back and play controls go to the TV (Tv.handles), and any other
- * button (Home, YouTube, Settings...) works on the box as usual and switches the TV back to the box. The Input or
- * star button opens InputPanelActivity over the box's picture, or on another input steps to the next one. Volume,
+ * button (Home, YouTube, Settings...) works on the box as usual and switches the TV back to the box. The Input button
+ * (InputKey: Input, or TV/star on an Onn, or the one the person picked) opens InputPanelActivity over the box's picture. Volume,
  * mute and power are left alone: the remote sends those to the TV by infrared. When the TV comes on (off to on, never
  * a power-off) to its own home screen, it is sent to the box. If the TV can't be reached, or is off, nothing changes.
  */
@@ -156,27 +156,19 @@ public class LinkService extends AccessibilityService {
     /** Running on an Onn box (Walmart's), whose remote has its own TV and star buttons. */
     static final boolean ONN = "onn".equalsIgnoreCase(android.os.Build.BRAND);
 
-    // MACRO_1 (341) and FEATURED_APP_1 (288) are newer than the app's minSdk, but a constant is a number copied into the
-    // app at build time, so naming them needs no newer Android on the box: nothing is looked up at runtime.
-    @android.annotation.SuppressLint("InlinedApi")
-    static boolean isInputKey(int keyCode) {
-        if (keyCode == KeyEvent.KEYCODE_TV_INPUT) return true;
-        // On an Onn box, also its remote's TV button and star button (MACRO_1 or FEATURED_APP_1, by remote version);
-        // on other boxes those can mean something else, so they're left alone.
-        return ONN && (keyCode == KeyEvent.KEYCODE_TV || keyCode == KeyEvent.KEYCODE_MACRO_1
-                || keyCode == KeyEvent.KEYCODE_FEATURED_APP_1);
-    }
-
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
         int code = event.getKeyCode();
-        if (Edition.takesKey(code)) return true;
-        if (tv == null || !Features.on(this, Features.REMOTE)) return false;
+        if (InputKeyActivity.listening) return false;  // the person is picking the Input button: every press goes there
+        boolean ready = tv != null && Features.on(this, Features.REMOTE);
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
-        if (isInputKey(code)) {
+        // The Input button comes first, even before this build's own keys, and is taken so nothing else on the box acts on it.
+        if (ready && InputKey.is(this, code)) {
             if (down && event.getRepeatCount() == 0) inputKey();
             return true;
         }
+        if (Edition.takesKey(code)) return true;
+        if (!ready) return false;
         if (!down) {
             if (ignored.remove(code)) return true;
             if (!forwarded.remove(code)) return false;
@@ -229,6 +221,15 @@ public class LinkService extends AccessibilityService {
             switchToBox();
         }
         startActivity(menu);
+        // A button-remapping app gets every press too (Android hands keys to all such apps at once), so one mapped to
+        // this button may act on it as well and push the menu away: then the menu comes back. The Input button stays
+        // this app's.
+        if (RemapApps.on(this)) {
+            long opened = System.currentTimeMillis();
+            timer.schedule(() -> {
+                if (InputPanelActivity.shown() == null && InputPanelActivity.closedAt < opened) startActivity(menu);
+            }, 900, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override

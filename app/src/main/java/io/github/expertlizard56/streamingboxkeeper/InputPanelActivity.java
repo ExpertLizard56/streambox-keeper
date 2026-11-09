@@ -191,20 +191,24 @@ public class InputPanelActivity extends Activity {
         choose(current);
     }
 
+    /** When the person last closed the menu (a choice, Back, or the Input button again). */
+    static volatile long closedAt;
+
     private void close() {
+        closedAt = System.currentTimeMillis();
         page.animate().alpha(0f).setDuration(120).withEndAction(this::finish).start();
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK || LinkService.isInputKey(keyCode)) {
+        if (keyCode == KeyEvent.KEYCODE_BACK || InputKey.is(this, keyCode)) {
             dismiss();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    /** Back, or Input/star again (LinkService calls this, as it takes those keys first). */
+    /** Back, or the Input button again (LinkService calls this, as it takes those keys first). */
     void dismiss() {
         cancel();
     }
