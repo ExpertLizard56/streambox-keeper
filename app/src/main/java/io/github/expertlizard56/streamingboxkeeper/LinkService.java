@@ -50,6 +50,8 @@ public class LinkService extends AccessibilityService {
             if (TvFinder.setUpAlone(getApplicationContext())) reload(getApplicationContext());
         });
         timer.scheduleWithFixedDelay(() -> keepTvFound(getApplicationContext()), 2, FIND_EVERY_MIN, TimeUnit.MINUTES);
+        // A button-remapping app switched on or off: the home screen's own button helpers step aside or come back.
+        timer.scheduleWithFixedDelay(() -> RemapApps.check(getApplicationContext()), 10, 60, TimeUnit.SECONDS);
         running = true;
     }
 
@@ -165,6 +167,7 @@ public class LinkService extends AccessibilityService {
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
         int code = event.getKeyCode();
+        if (Edition.takesKey(code)) return true;
         if (tv == null || !Features.on(this, Features.REMOTE)) return false;
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         if (isInputKey(code)) {

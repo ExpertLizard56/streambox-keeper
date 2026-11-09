@@ -90,6 +90,7 @@ public class Check extends BroadcastReceiver {
         long now = System.currentTimeMillis();
         if (now - prefs.getLong("updateCheckedAt", 0) < UPDATE_EVERY_MS) return;
         prefs.edit().putLong("updateCheckedAt", now).apply();
+        if (Edition.updateSelf(context)) return;
         if (Features.on(context, Features.SELF_UPDATE)) Updater.check(context);
     }
 

@@ -28,7 +28,7 @@ final class Features {
     }
 
     static boolean on(Context context, String feature) {
-        return prefs(context).getBoolean("feature." + feature, !APP_UPDATES.equals(feature));
+        return prefs(context).getBoolean("feature." + feature, Edition.featureDefault(feature));
     }
 
     static void set(Context context, String feature, boolean on) {

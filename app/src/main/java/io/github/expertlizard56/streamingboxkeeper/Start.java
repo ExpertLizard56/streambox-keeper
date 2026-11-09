@@ -9,6 +9,7 @@ public class Start extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Edition.started(context.getApplicationContext());
         Check.schedule(context);
         Check.run(context.getApplicationContext());
     }
