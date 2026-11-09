@@ -7,21 +7,15 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.KeyEvent;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * Picking the Input button (InputKey): the next remote button pressed on this screen opens the input menu from now on.
- * While it's open, LinkService lets every press through to it ([listening]). The arrows, OK and Back still move
- * around it, and a button that can't be picked says why.
+ * Picking which button opens the input menu (InputKey): Input, ★, or both, like Google TV's own settings, which only
+ * let the ★ button be changed.
  */
 public class InputKeyActivity extends Activity {
-
-    /** This screen is waiting for a press: LinkService takes no keys meanwhile. */
-    static volatile boolean listening;
-
-    private TextView said;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -32,54 +26,26 @@ public class InputKeyActivity extends Activity {
         page.setPadding(dp(96), dp(48), dp(96), dp(48));
         page.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[] {0xFF161B22, 0xFF0B0E12}));
-        page.addView(text("Press the button that should open the input menu", 30, Color.WHITE));
-        page.addView(text("Now: " + InputKey.describe(this), 18, 0x99FFFFFF));
-        said = text("", 20, 0xFF8AB4F8);
-        page.addView(said);
-        TextView usual = text("Use the usual " + (LinkService.ONN ? "ones (Input, TV, ★)" : "one (Input)"), 18, Color.WHITE);
-        usual.setPadding(dp(24), dp(12), dp(24), dp(12));
-        usual.setFocusable(true);
-        usual.setBackground(buttonBackground());
-        usual.setOnClickListener(v -> picked(InputKey.USUAL));
-        LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        size.topMargin = dp(28);
-        page.addView(usual, size);
+        page.addView(text("Which button opens the input menu?", 30, Color.WHITE));
+        page.addView(text("The other one keeps doing what Google TV set it to.", 18, 0x99FFFFFF));
+        int now = InputKey.choice(this);
+        View focus = null;
+        for (int c : new int[] {InputKey.BOTH, InputKey.INPUT, InputKey.STAR}) {
+            TextView b = text((c == now ? "✓  " : "") + InputKey.words(c), 20, Color.WHITE);
+            b.setPadding(dp(32), dp(12), dp(32), dp(12));
+            b.setFocusable(true);
+            b.setBackground(buttonBackground());
+            b.setOnClickListener(v -> {
+                InputKey.choose(this, c);
+                finish();
+            });
+            LinearLayout.LayoutParams size = new LinearLayout.LayoutParams(dp(360), LinearLayout.LayoutParams.WRAP_CONTENT);
+            size.topMargin = dp(16);
+            page.addView(b, size);
+            if (c == now) focus = b;
+        }
         setContentView(page);
-        usual.requestFocus();
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        String refusal = InputKey.refusal(keyCode);
-        if (refusal == null) {
-            if (event.getRepeatCount() == 0) picked(keyCode);
-            return true;
-        }
-        if (keyCode != KeyEvent.KEYCODE_BACK && keyCode != KeyEvent.KEYCODE_DPAD_CENTER && keyCode != KeyEvent.KEYCODE_ENTER
-                && !(keyCode >= KeyEvent.KEYCODE_DPAD_UP && keyCode <= KeyEvent.KEYCODE_DPAD_RIGHT)) {
-            said.setText(refusal + " Pick another button.");
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    private void picked(int keyCode) {
-        InputKey.pick(this, keyCode);
-        said.setText("The input menu now opens with " + InputKey.describe(this) + ".");
-        listening = false;
-        said.postDelayed(this::finish, 1500);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        listening = true;
-    }
-
-    @Override
-    protected void onPause() {
-        listening = false;
-        super.onPause();
+        if (focus != null) focus.requestFocus();
     }
 
     private TextView text(String s, int sp, int color) {

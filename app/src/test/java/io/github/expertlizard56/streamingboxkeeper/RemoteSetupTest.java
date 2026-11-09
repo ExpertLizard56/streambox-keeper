@@ -19,15 +19,17 @@ public class RemoteSetupTest {
         RemoteSetup r = RemoteSetup.parse(SOUNDBAR);
         assertTrue(r.done());
         assertFalse(r.inputByInfrared());
+        assertFalse(r.starByInfrared());
         assertEquals("by infrared to LG Soundbar", RemoteSetup.words(r.volume));
         assertEquals("by infrared and HDMI", RemoteSetup.words(r.power));
     }
 
     @Test
     public void noVolumeIsNotDone() {
-        RemoteSetup r = RemoteSetup.parse("  Client:\n    Volume: NONE\n    Power: CEC\n    Input: IR\n");
+        RemoteSetup r = RemoteSetup.parse("  Client:\n    Volume: NONE\n    Power: CEC\n    Input: IR\n    Magic: IR\n");
         assertFalse(r.done());
         assertTrue(r.inputByInfrared());
+        assertTrue(r.starByInfrared());
         assertEquals("not set up", RemoteSetup.words(r.volume));
     }
 

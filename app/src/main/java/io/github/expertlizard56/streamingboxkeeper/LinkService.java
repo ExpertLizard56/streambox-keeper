@@ -159,7 +159,6 @@ public class LinkService extends AccessibilityService {
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
         int code = event.getKeyCode();
-        if (InputKeyActivity.listening) return false;  // the person is picking the Input button: every press goes there
         boolean ready = tv != null && Features.on(this, Features.REMOTE);
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         // The Input button comes first, even before this build's own keys, and is taken so nothing else on the box acts on it.

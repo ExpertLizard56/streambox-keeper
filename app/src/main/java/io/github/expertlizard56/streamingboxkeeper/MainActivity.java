@@ -120,13 +120,22 @@ public class MainActivity extends Activity {
                     done ? "Change" : "Set up", v -> openSettings(RemoteSetup.WIZARD));
             if (first == null && !done) first = b;
         }
-        // 5. Which button opens the input menu (InputKey); button-remapping apps can't take it.
-        String input = "Opens the input menu: " + InputKey.describe(this) + ". Button-remapping apps can't take it.";
-        if (remote != null && remote.inputByInfrared() && InputKey.picked(this) == InputKey.USUAL) {
-            input += " The remote sends its Input button to the TV by infrared, so the box may not see it: pick another"
-                    + " button, or change Input in the remote's set-up.";
+        // 5. Which button opens the input menu (InputKey: Input, ★ or both, like Google TV's own settings).
+        int choice = InputKey.choice(this);
+        String input = InputKey.describe(this) + " opens the input menu. Button-remapping apps can't take it.";
+        boolean clash = false;
+        if (remote != null && choice != InputKey.STAR && remote.inputByInfrared()) {
+            clash = true;
+            input += " But the remote sends Input to the TV by infrared, so the TV switches by itself: choose ★, or set"
+                    + " Input to TV (CEC) in the remote's set-up.";
         }
-        step(true, "Input button", input, "Change", v -> startActivity(new Intent(this, InputKeyActivity.class)));
+        if (remote != null && choice != InputKey.INPUT && remote.starByInfrared()) {
+            clash = true;
+            input += " But Google TV set ★ to switch the TV's inputs by infrared, so the TV switches by itself: choose"
+                    + " Input, or set ★ to an app in Set up customizable button.";
+        }
+        View in = step(!clash, "Input button", input, "Change", v -> startActivity(new Intent(this, InputKeyActivity.class)));
+        if (first == null && clash) first = in;
 
         column.addView(heading("Features"));
         View firstSwitch = null;

@@ -18,8 +18,11 @@ final class RemoteSetup {
     final String power;
     final String volume;
     final String input;
+    /** The ★ button (Google calls it Magic): "Software [...]" when it opens an app or does an action. */
+    final String star;
 
-    private RemoteSetup(String power, String volume, String input) {
+    private RemoteSetup(String power, String volume, String input, String star) {
+        this.star = star;
         this.power = power;
         this.volume = volume;
         this.input = input;
@@ -43,13 +46,15 @@ final class RemoteSetup {
         String power = null;
         String volume = null;
         String input = null;
+        String star = null;
         for (String line : dump.split("\n")) {
             String l = line.trim();
             if (l.startsWith("Power: ")) power = l.substring(7).trim();
             else if (l.startsWith("Volume: ")) volume = l.substring(8).trim();
             else if (l.startsWith("Input: ")) input = l.substring(7).trim();
+            else if (l.startsWith("Magic: ")) star = l.substring(7).trim();
         }
-        return power == null && volume == null ? null : new RemoteSetup(power, volume, input);
+        return power == null && volume == null ? null : new RemoteSetup(power, volume, input, star);
     }
 
     static boolean isSet(String mode) {
@@ -63,6 +68,14 @@ final class RemoteSetup {
     /** The remote sends Input to the TV by infrared itself, so the box may never see that button. */
     boolean inputByInfrared() {
         return isSet(input) && !"CEC".equals(input);
+    }
+
+    /**
+     * Google TV set ★ to switch the TV's inputs by infrared (anything but an app or action, "Software"), so the TV may
+     * change input by itself when ★ is pressed.
+     */
+    boolean starByInfrared() {
+        return isSet(star) && !star.startsWith("Software");
     }
 
     /** A mode in words: "not set up", "over HDMI", "by infrared", or the device it sends infrared to. */
