@@ -4,6 +4,12 @@
 
 pre-commit:
   jobs:
+    # Gitleaks: refuses a commit whose new lines hold a password, token or key (this repo will be public).
+    # A false alarm: put `gitleaks:allow` in a comment on that line. Needs gitleaks on the PATH
+    # (`winget install Gitleaks.Gitleaks`).
+    - name: secrets check
+      run: gitleaks git --pre-commit --staged --redact --no-banner --verbose
+
     # Android Lint on the app, when code, screens or the build change. Lint already fails on an error
     # (`lint { abortOnError true }` in app/build.gradle), so a new one is fixed in the commit that brings it.
     - name: android lint
