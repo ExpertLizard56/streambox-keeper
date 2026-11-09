@@ -1,0 +1,18 @@
+# Checks that run by themselves when any AI (or the owner) saves work here (lefthook, AGENTS.md: Checks). They cost
+# no AI tokens. A failed check stops the commit or push: fix what it says. Set up once per checkout with
+# `lefthook install`.
+
+pre-commit:
+  jobs:
+    # Android Lint on the app, when code, screens or the build change. Lint already fails on an error
+    # (`lint { abortOnError true }` in app/build.gradle), so a new one is fixed in the commit that brings it.
+    - name: android lint
+      glob: "*.{java,xml,gradle}"
+      run: ./gradlew --console=plain -q :app:lintDebug
+
+pre-push:
+  jobs:
+    # The app's unit tests (app/src/test), when Java is in what's pushed.
+    - name: app tests
+      glob: "*.java"
+      run: ./gradlew --console=plain -q :app:testDebugUnitTest

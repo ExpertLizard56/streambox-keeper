@@ -54,6 +54,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    // The unit tests (app/src/test) are plain Java, run by the commit hook: no Android is started for them.
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -64,4 +69,10 @@ dependencies {
         exclude group: 'org.junit.jupiter'
         exclude group: 'junit'
     }
+
+    // Memory leaks, in debug builds only: a debug build on an emulator reports them. Never in a release build,
+    // which is what people install.
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
+
+    testImplementation 'junit:junit:4.13.2'
 }
