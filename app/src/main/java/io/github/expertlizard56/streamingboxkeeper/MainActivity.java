@@ -120,19 +120,22 @@ public class MainActivity extends Activity {
                     done ? "Change" : "Set up", v -> openSettings(RemoteSetup.WIZARD));
             if (first == null && !done) first = b;
         }
-        // 5. Which button opens the input menu (InputKey: Input, ★ or both, like Google TV's own settings).
-        int choice = InputKey.choice(this);
-        String input = InputKey.describe(this) + " opens the input menu. Button-remapping apps can't take it.";
+        // 5. Which button opens the input menu (InputKey: Input or ★, the same button on different remotes, plus one
+        // from another remote if added).
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics());
+        android.text.SpannableStringBuilder input = new android.text.SpannableStringBuilder()
+                .append(InputKey.label(this, px, 0x99FFFFFF))
+                .append(" opens the input menu. Button-remapping apps can't take it. Different remote? Change adds its button.");
         boolean clash = false;
-        if (remote != null && choice != InputKey.STAR && remote.inputByInfrared()) {
+        if (remote != null && remote.inputByInfrared()) {
             clash = true;
-            input += " But the remote sends Input to the TV by infrared, so the TV switches by itself: choose ★, or set"
-                    + " Input to TV (CEC) in the remote's set-up.";
+            input.append(" But the remote sends its Input button to the TV by infrared, so the TV switches by itself:"
+                    + " set Input to TV (CEC) in the remote's set-up.");
         }
-        if (remote != null && choice != InputKey.INPUT && remote.starByInfrared()) {
+        if (remote != null && remote.starByInfrared()) {
             clash = true;
-            input += " But Google TV set ★ to switch the TV's inputs by infrared, so the TV switches by itself: choose"
-                    + " Input, or set ★ to an app in Set up customizable button.";
+            input.append(" But Google TV set ★ to switch the TV's inputs by infrared, so the TV switches by itself:"
+                    + " set ★ to an app in Set up customizable button.");
         }
         View in = step(!clash, "Input button", input, "Change", v -> startActivity(new Intent(this, InputKeyActivity.class)));
         if (first == null && clash) first = in;
@@ -166,7 +169,7 @@ public class MainActivity extends Activity {
     }
 
     /** One set-up step: done (a check mark) or not (its button). Returns the button, or null. */
-    private View step(boolean done, String title, String detail, String action, View.OnClickListener onClick) {
+    private View step(boolean done, String title, CharSequence detail, String action, View.OnClickListener onClick) {
         LinearLayout row = card();
         LinearLayout words = new LinearLayout(this);
         words.setOrientation(LinearLayout.VERTICAL);
@@ -290,7 +293,7 @@ public class MainActivity extends Activity {
         return states;
     }
 
-    private TextView text(String s, int sp, int color) {
+    private TextView text(CharSequence s, int sp, int color) {
         TextView t = new TextView(this);
         t.setText(s);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);

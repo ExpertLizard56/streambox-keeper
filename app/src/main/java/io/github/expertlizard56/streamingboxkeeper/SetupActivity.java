@@ -1,45 +1,30 @@
 package io.github.expertlizard56.streamingboxkeeper;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.view.View;
 import java.util.List;
 
 /**
- * The app's tile on the home screen: what Streaming Box Keeper last did for the box, and which TV this box is plugged into, for when TvFinder can't tell alone (several TVs on the network): lists the TVs it
- * finds and saves the one picked. Also the app's tile on the home screen, showing what's set up now. Needs the box's
- * system access for the HDMI port, so it offers that first (the box asks once, "Allow USB debugging?").
+ * Which TV this box is plugged into, for when TvFinder can't tell alone (several TVs on the network): lists the TVs it
+ * finds and saves the one picked. Needs the box's system access for the HDMI port, so it offers that first (the box
+ * asks once, "Allow USB debugging?"). Opened from the main screen's "Your TV" step.
  */
 public class SetupActivity extends Activity {
 
-    private LinearLayout page;
-    private TextView status;
+    private Screen screen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        page = new LinearLayout(this);
-        page.setOrientation(LinearLayout.VERTICAL);
-        page.setGravity(Gravity.CENTER);
-        page.setBackgroundColor(Color.rgb(16, 18, 24));
-        page.setPadding(96, 48, 96, 48);
-        setContentView(page);
+        screen = new Screen(this);
         Check.schedule(this);  // opening the app once also starts the upkeep (it starts after every boot too)
         search();
     }
 
     private void search() {
-        page.removeAllViews();
-        page.addView(text(getString(R.string.app_name), 36));
-        TextView about = text(getString(R.string.keeper), 18);
-        about.setTextColor(Color.rgb(180, 186, 200));
-        page.addView(about);
-        status = text(getString(R.string.searching), 20);
-        page.addView(status);
+        screen.start("Your TV", "The TV this box is plugged into. Streaming Box Keeper usually finds it by itself.");
+        screen.card("Looking for TVs on the network…", null, null, null);
         new Thread(() -> {
             boolean allowed = SelfAdb.allowed(this);
             int port = allowed ? TvFinder.hdmiPort(this) : 0;
@@ -51,62 +36,33 @@ public class SetupActivity extends Activity {
 
     private void show(boolean allowed, int port, List<TvFinder.Found> found) {
         TvConfig now = TvConfig.load(this);
-        StringBuilder s = new StringBuilder(keeperState()).append("\n\n");
-        s.append(now != null ? getString(R.string.set_up_for, now.kind, now.address, now.input)
-                : getString(R.string.not_set_up));
-        s.append("\n").append(!allowed ? getString(R.string.allow_first)
-                : port > 0 ? getString(R.string.on_port, port) : getString(R.string.no_port));
-        if (found.isEmpty()) s.append("\n").append(getString(R.string.none_found));
-        else if (port > 0) s.append("\n").append(getString(R.string.pick));
-        status.setText(s);
-        Button first = null;
+        String about = now == null ? "Not chosen yet: pick the TV this box is plugged into."
+                : "Now: " + ("fire".equals(now.kind) ? "Fire TV" : "Roku TV") + " at " + now.address
+                        + (port > 0 ? ", this box on its HDMI " + port + "." : ".");
+        screen.start("Your TV", about);
+        View first = null;
+        if (!allowed) {
+            first = screen.card("Allow system access first",
+                    "Press OK: if the box asks \"Allow USB debugging?\", tick Always allow and press Allow. If it doesn't"
+                            + " ask, turn on Network debugging in Settings > System > Developer options.",
+                    null, v -> search());
+        } else if (port == 0) {
+            screen.card("Couldn't read which HDMI port this box is on", null, null, null);
+        }
         if (port > 0) {
             for (TvFinder.Found tv : found) {
-                Button b = button(tv.label() + (tv.showingBox ? getString(R.string.showing_box) : ""));
-                b.setOnClickListener(v -> {
-                    new TvConfig(tv.kind, tv.address, TvFinder.inputFor(tv.kind, port), tv.id).save(this);
-                    LinkService.reload(this);
-                    search();
-                });
-                page.addView(b);
+                boolean chosen = now != null && now.kind.equals(tv.kind) && now.address.equals(tv.address);
+                View b = screen.card(tv.label(), tv.showingBox ? "Showing this box now" : tv.address,
+                        chosen ? "✓  Chosen" : null, v -> {
+                            new TvConfig(tv.kind, tv.address, TvFinder.inputFor(tv.kind, port), tv.id).save(this);
+                            LinkService.reload(this);
+                            search();
+                        });
                 if (first == null) first = b;
             }
         }
-        Button again = button(getString(allowed ? R.string.search_again : R.string.allow_and_search));
-        again.setOnClickListener(v -> search());
-        page.addView(again);
+        if (found.isEmpty()) screen.card("No Roku or Fire TV found on the network", "Is the TV on?", null, null);
+        View again = screen.card("Search again", null, null, v -> search());
         (first != null ? first : again).requestFocus();
-    }
-
-    /** The connection, this version, and what the nightly jobs last did (Jobs notes them). */
-    private String keeperState() {
-        StringBuilder s = new StringBuilder(getString(Check.connected(this) ? R.string.online : R.string.offline));
-        s.append("\n").append(getString(R.string.tv_remote)).append(" ").append(LinkService.describe(this));
-        s.append("\n").append(getString(R.string.version, Jobs.installedVersion(this, getPackageName())));
-        android.content.SharedPreferences prefs = getSharedPreferences("keeper", MODE_PRIVATE);
-        String[][] items = {{"lastTidy", getString(R.string.last_tidy)}, {"lastRestart", getString(R.string.last_restart)},
-                {"lastAppUpdate", getString(R.string.last_app_update)}};
-        for (String[] item : items) {
-            String v = prefs.getString(item[0], null);
-            if (v != null) s.append("\n").append(item[1]).append(" ").append(v);
-        }
-        return s.toString();
-    }
-
-    private TextView text(String s, int size) {
-        TextView view = new TextView(this);
-        view.setText(s);
-        view.setTextSize(size);
-        view.setTextColor(Color.WHITE);
-        view.setGravity(Gravity.CENTER);
-        view.setPadding(0, 12, 0, 12);
-        return view;
-    }
-
-    private Button button(String s) {
-        Button b = new Button(this);
-        b.setText(s);
-        b.setAllCaps(false);
-        return b;
     }
 }

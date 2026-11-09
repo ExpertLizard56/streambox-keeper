@@ -10,23 +10,4 @@
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
-    <string name="searching">Looking for TVs on the network…</string>
-    <string name="set_up_for">Set up for: %1$s TV at %2$s (box on its %3$s)</string>
-    <string name="not_set_up">Not set up yet: which TV is this box plugged into?</string>
-    <string name="allow_first">First allow system access: press the button below, and if the box asks \"Allow USB debugging?\", tick Always allow and press Allow. If it doesn\'t ask, turn on Network debugging in Settings, System, Developer options.</string>
-    <string name="on_port">This box is plugged into HDMI %1$d.</string>
-    <string name="no_port">Couldn\'t read which HDMI port this box is on.</string>
-    <string name="none_found">No Roku or Fire TV found on the network.</string>
-    <string name="pick">Pick the TV this box is plugged into:</string>
-    <string name="showing_box"> (showing this box now)</string>
-    <string name="search_again">Search again</string>
-    <string name="allow_and_search">Allow system access and search</string>
-    <string name="keeper">Its remote also works your TV when the TV is on another input, and it looks after the box while it sleeps.</string>
-    <string name="online">Connected to the network.</string>
-    <string name="offline">Not connected right now.</string>
-    <string name="last_tidy">Last memory cleanup:</string>
-    <string name="last_restart">Last restart:</string>
-    <string name="last_app_update">Last app update:</string>
-    <string name="tv_remote">TV remote:</string>
-    <string name="version">Version %1$s</string>
 </resources>
