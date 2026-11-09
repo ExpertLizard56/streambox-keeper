@@ -21,8 +21,10 @@ final class Features {
     static final String APP_UPDATES = "appUpdates";
     /** Streaming Box Keeper updates itself from its GitHub releases (Updater). */
     static final String SELF_UPDATE = "selfUpdate";
+    /** An app may hand Streaming Box Keeper a newer version of itself to install (InstallFor): only its own update. */
+    static final String INSTALL_FOR_APPS = "installForApps";
 
-    static final String[] ALL = {REMOTE, WIFI, CLEANUP, RESTART, APP_UPDATES, SELF_UPDATE};
+    static final String[] ALL = {REMOTE, WIFI, CLEANUP, RESTART, APP_UPDATES, SELF_UPDATE, INSTALL_FOR_APPS};
 
     private Features() {
     }

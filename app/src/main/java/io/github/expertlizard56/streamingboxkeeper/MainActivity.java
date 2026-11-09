@@ -124,6 +124,8 @@ public class MainActivity extends Activity {
         step(listed > 0, "Apps to keep updated", listed == 0 ? "None yet." : listed + (listed == 1 ? " app." : " apps."),
                 "Choose apps", v -> startActivity(new Intent(this, AppsActivity.class)));
         feature(Features.SELF_UPDATE, "Update Streaming Box Keeper", "New versions from GitHub, installed automatically.");
+        feature(Features.INSTALL_FOR_APPS, "Let apps update themselves through it",
+                "An app that asks can hand over its own new version to be installed. Only its own, signed the same way.");
 
         column.addView(heading("Last done"));
         android.content.SharedPreferences prefs = getSharedPreferences("keeper", MODE_PRIVATE);

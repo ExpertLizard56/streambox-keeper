@@ -97,6 +97,16 @@
             </intent-filter>
         </receiver>
 
+        <!-- An app hands over a newer version of itself to be installed through the box's own ADB (InstallFor).
+             Open to any app: it only ever installs the asking app's own update, signed with the same key. -->
+        <receiver
+            android:name=".InstallFor"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="io.github.expertlizard56.streamingboxkeeper.INSTALL_UPDATE" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".Start"
             android:exported="true">
