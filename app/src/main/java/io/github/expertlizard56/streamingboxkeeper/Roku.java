@@ -135,10 +135,12 @@ final class Roku implements Tv {
         if (repeats(keyCode)) startRepeat(key);
     }
 
+    // A step every REPEAT_MS, counted from the end of the last one: a press only queues the key, so the gaps are the same,
+    // and a process that sat cached never catches up in a burst of repeats.
     private synchronized void startRepeat(String key) {
         stopRepeat();
         repeatStarted = System.currentTimeMillis();
-        repeat = REPEATER.scheduleAtFixedRate(() -> {
+        repeat = REPEATER.scheduleWithFixedDelay(() -> {
             if (System.currentTimeMillis() - repeatStarted > REPEAT_LIMIT_MS) {
                 stopRepeat();
                 return;

@@ -156,6 +156,9 @@ public class LinkService extends AccessibilityService {
     /** Running on an Onn box (Walmart's), whose remote has its own TV and star buttons. */
     static final boolean ONN = "onn".equalsIgnoreCase(android.os.Build.BRAND);
 
+    // MACRO_1 (341) and FEATURED_APP_1 (288) are newer than the app's minSdk, but a constant is a number copied into the
+    // app at build time, so naming them needs no newer Android on the box: nothing is looked up at runtime.
+    @android.annotation.SuppressLint("InlinedApi")
     static boolean isInputKey(int keyCode) {
         if (keyCode == KeyEvent.KEYCODE_TV_INPUT) return true;
         // On an Onn box, also its remote's TV button and star button (MACRO_1 or FEATURED_APP_1, by remote version);
