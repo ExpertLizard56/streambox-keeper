@@ -9,8 +9,10 @@ import android.view.KeyEvent;
 
 /**
  * Which remote button opens the input menu (LinkService). The Input button (the screen-with-an-arrow symbol) and the ★
- * button are the same button on different remotes, so both always do (and an Onn remote's TV button). Someone with
- * another remote can add its button (InputKeyActivity: press it); arrows, OK, Back, Home, power and volume can't be.
+ * button are the same button on different remotes, so both always do (and an Onn remote's TV button). An Onn remote
+ * (Vendor_0957_Product_0031) keeps ★ in MACRO_1, and its FEATURED_APP_1 button is "Free TV", not the Input button.
+ * Someone with another remote can add its button (InputKeyActivity: press it); arrows, OK, Back, Home, power and
+ * volume can't be.
  */
 final class InputKey {
 
@@ -44,13 +46,21 @@ final class InputKey {
 
     // MACRO_1 (341) and FEATURED_APP_1 (288) are newer than the app's minSdk, but a constant is a number copied into the
     // app at build time, so naming them needs no newer Android on the box: nothing is looked up at runtime.
-    /** Input, ★ (MACRO_1 or FEATURED_APP_1, by remote version), or an Onn remote's TV button. */
+    /** Input, ★ (MACRO_1, or FEATURED_APP_1 on a remote whose ★ button is that one), or an Onn remote's TV button. */
     @android.annotation.SuppressLint("InlinedApi")
     static boolean isUsual(int keyCode) {
+        return isUsual(keyCode, LinkService.ONN);
+    }
+
+    /** The same for an Onn box or any other, so a test needs no box. */
+    @android.annotation.SuppressLint("InlinedApi")
+    static boolean isUsual(int keyCode, boolean onn) {
         return keyCode == KeyEvent.KEYCODE_TV_INPUT || keyCode == KeyEvent.KEYCODE_MACRO_1
-                || keyCode == KeyEvent.KEYCODE_FEATURED_APP_1
+                // On an Onn remote (Vendor_0957_Product_0031) ★ is MACRO_1, and FEATURED_APP_1 is its "Free TV" button,
+                // which must stay Free TV; on other remotes FEATURED_APP_1 can be the ★ button.
+                || (!onn && keyCode == KeyEvent.KEYCODE_FEATURED_APP_1)
                 // The TV button stands in for Input only on an Onn remote; on other remotes it can mean live TV.
-                || (LinkService.ONN && keyCode == KeyEvent.KEYCODE_TV);
+                || (onn && keyCode == KeyEvent.KEYCODE_TV);
     }
 
     /** Why this button can't be added, or null if it can. */
