@@ -23,6 +23,8 @@ the box while it sleeps.
 - **App updates (optional).** Keeps any app you choose up to date: give it the app's Downloader code (the numbers
   you'd type into the Downloader app), its GitHub page, or a link to its .apk. Checked once a day, installed at night
   while the box sleeps. It only installs the same app, newer, and Android refuses an update signed by anyone else.
+  SmartTube, Moonlight and [Home Watch](https://github.com/ExpertLizard56/home-watch) go on the list by themselves
+  when they're on the box (take one off and it stays off).
 
 Every feature has its own switch on the app's screen. Nothing happens on screen while you're watching.
 

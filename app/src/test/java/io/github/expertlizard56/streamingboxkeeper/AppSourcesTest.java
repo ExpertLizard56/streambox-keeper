@@ -1,8 +1,12 @@
 package io.github.expertlizard56.streamingboxkeeper;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.Test;
 
 /**
@@ -41,5 +45,15 @@ public class AppSourcesTest {
         assertFalse(AppSources.validSource("123"));
         // A Downloader code is 4 to 8 numbers, no more.
         assertFalse(AppSources.validSource("123456789"));
+    }
+
+    @Test
+    public void aKnownAppOnTheBoxIsOfferedOnce() {
+        Set<String> installed = new HashSet<>(Arrays.asList("com.limelight.noir", "io.github.expertlizard56.homewatch.tv"));
+        Set<String> offered = new HashSet<>(Arrays.asList("org.smarttube.stable", "com.limelight.noir"));
+        assertEquals(1, AppSources.toOffer(offered, installed::contains).size());
+        assertEquals("io.github.expertlizard56.homewatch.tv", AppSources.toOffer(offered, installed::contains).get(0)[0]);
+        offered.add("io.github.expertlizard56.homewatch.tv");
+        assertTrue(AppSources.toOffer(offered, installed::contains).isEmpty());
     }
 }

@@ -9,7 +9,12 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.JSONArray;
@@ -49,33 +54,56 @@ final class AppSources {
             {"org.smarttube.beta", "github.com/yuliskov/SmartTube"},
             {"com.limelight", "github.com/moonlight-stream/moonlight-android"},
             {"com.limelight.noir", "github.com/ClassicOldSong/moonlight-android"},
+            {"io.github.expertlizard56.homewatch.tv", "github.com/ExpertLizard56/home-watch"},
     };
+
+    /** The known apps before 0.1.2: a box set up earlier already had the chance to list (or drop) these. */
+    private static final Set<String> FIRST_KNOWN = new HashSet<>(Arrays.asList(
+            "org.smarttube.stable", "org.smarttube.beta", "com.limelight", "com.limelight.noir"));
 
     private AppSources() {
     }
 
-    /** The list; the first time, the known apps that are on this box. */
+    /**
+     * The list. A known app goes on it once, the first time it's on this box (also after the box was set up); one
+     * taken off stays off.
+     */
     static List<App> load(Context context) {
         SharedPreferences prefs = prefs(context);
         List<App> apps = new ArrayList<>();
         String saved = prefs.getString("appSources", null);
-        if (saved == null) {
-            for (String[] known : KNOWN) {
-                if (installedCode(context, known[0]) >= 0) apps.add(new App(known[0], known[1]));
+        if (saved != null) {
+            try {
+                JSONArray list = new JSONArray(saved);
+                for (int i = 0; i < list.length(); i++) {
+                    JSONObject app = list.getJSONObject(i);
+                    apps.add(new App(app.getString("package"), app.getString("source")));
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "app list unreadable: " + e);
             }
-            save(context, apps);
-            return apps;
         }
-        try {
-            JSONArray list = new JSONArray(saved);
-            for (int i = 0; i < list.length(); i++) {
-                JSONObject app = list.getJSONObject(i);
-                apps.add(new App(app.getString("package"), app.getString("source")));
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "app list unreadable: " + e);
+        Set<String> offered = new HashSet<>(prefs.getStringSet("knownOffered",
+                saved == null ? Collections.emptySet() : FIRST_KNOWN));
+        List<String[]> add = toOffer(offered, pkg -> installedCode(context, pkg) >= 0);
+        for (String[] known : add) {
+            offered.add(known[0]);
+            if (apps.stream().noneMatch(a -> a.pkg.equals(known[0]))) apps.add(new App(known[0], known[1]));
+        }
+        if (saved == null || !add.isEmpty()) {
+            save(context, apps);
+            prefs.edit().putStringSet("knownOffered", offered).apply();
         }
         return apps;
+    }
+
+    /** The known apps to put on the list now: on the box, and not put on it before. */
+    static List<String[]> toOffer(Set<String> offered, Predicate<String> installed) {
+        List<String[]> add = new ArrayList<>();
+        for (String[] known : KNOWN) {
+            if (!offered.contains(known[0]) && installed.test(known[0])) add.add(known);
+        }
+        return add;
     }
 
     static void save(Context context, List<App> apps) {
