@@ -7,16 +7,30 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.lang.ref.WeakReference;
 
 /**
  * For a remote without an Input or ★ button: the next button pressed here opens the input menu too (InputKey), next
- * to Input and ★. While it's open LinkService lets every press through to it ([listening]). The arrows, OK and Back
+ * to Input and ★. While it's open LinkService hands every other press to it ([listening()]). The arrows, OK and Back
  * still move around it, and a button that can't be added says why.
  */
 public class InputKeyActivity extends Activity {
 
-    /** This screen is waiting for a press: LinkService takes no keys meanwhile. */
-    static volatile boolean listening;
+    /**
+     * The screen waiting for a press (this one or BlockedKeysActivity), or null. LinkService hands it every button
+     * that isn't the arrows, OK, Back, Home, power or volume, before the box acts on it: an Onn box opens an app
+     * button's app (or its Play Store page) before the screen would see the press.
+     */
+    private static volatile WeakReference<Activity> listening = new WeakReference<>(null);
+
+    static Activity listening() {
+        return listening.get();
+    }
+
+    static void listen(Activity screen, boolean on) {
+        if (on) listening = new WeakReference<>(screen);
+        else if (listening.get() == screen) listening = new WeakReference<>(null);
+    }
 
     private Screen screen;
     private TextView status;
@@ -54,19 +68,19 @@ public class InputKeyActivity extends Activity {
         InputKey.setExtra(this, keyCode);
         status.setText(new SpannableStringBuilder("Done: ").append(InputKey.label(this, screen.px(15), 0xFF8AB4F8))
                 .append(" opens the input menu."));
-        listening = false;
+        listen(this, false);
         status.postDelayed(this::finish, 1500);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        listening = true;
+        listen(this, true);
     }
 
     @Override
     protected void onPause() {
-        listening = false;
+        listen(this, false);
         super.onPause();
     }
 }

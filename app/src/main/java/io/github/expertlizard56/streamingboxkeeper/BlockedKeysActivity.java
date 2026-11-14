@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 /**
  * Adding remote buttons that do nothing (BlockedKeys): the next button pressed here is added. While it's open
- * LinkService lets every press through to it (InputKeyActivity.listening). Each one added is a card that removes it.
+ * LinkService hands every other press to it (InputKeyActivity.listening()). Each one added is a card that removes it.
  * The arrows, OK and Back still move around, and a button that can't be added says why.
  */
 public class BlockedKeysActivity extends Activity {
@@ -61,12 +61,12 @@ public class BlockedKeysActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        InputKeyActivity.listening = true;
+        InputKeyActivity.listen(this, true);
     }
 
     @Override
     protected void onPause() {
-        InputKeyActivity.listening = false;
+        InputKeyActivity.listen(this, false);
         super.onPause();
     }
 }

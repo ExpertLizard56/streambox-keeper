@@ -1,6 +1,7 @@
 package io.github.expertlizard56.streamingboxkeeper;
 
 import android.accessibilityservice.AccessibilityService;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.KeyEvent;
@@ -159,7 +160,13 @@ public class LinkService extends AccessibilityService {
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
         int code = event.getKeyCode();
-        if (InputKeyActivity.listening) return false;  // the person is adding a button: every press goes there
+        Activity listening = InputKeyActivity.listening();
+        if (listening != null) {  // the person is adding a button: it goes to that screen, not to the box or the TV
+            if (InputKey.refusal(code) != null) return false;  // the arrows, OK and Back still move around it
+            KeyEvent press = new KeyEvent(event);
+            listening.runOnUiThread(() -> listening.dispatchKeyEvent(press));
+            return true;
+        }
         boolean ready = tv != null && Features.on(this, Features.REMOTE);
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         // The Input button comes first, even before the buttons set to do nothing, and is taken so nothing else on the box acts on it.
