@@ -73,5 +73,27 @@ Streaming Box Keeper" on pick it up within a day.
 don't arrive either, so what a remote button does there is only tested with a real remote. The `onn_s905x5m` emulator
 (Android 14) does show the "Allow USB debugging?" question (Nov 14: Ask now, tick Always allow, allow it), so system
 access (and with it installing and switching the remote on in one press, and the Assistant switch) can be tested there.
-The main screen only makes the box ask when Ask now is pressed
-pressed (`SelfAdb.knownAllowed`).
+The main screen only makes the box ask when Ask now is pressed (`SelfAdb.knownAllowed`).
+
+## Real box notes (Onn 4K Pro, Android 14)
+
+- Testing a remote button without a remote: the box's own `uinput` tool makes a pretend remote whose presses go through
+  the key filter like a real one (`input keyevent` doesn't). A file of JSON lines, run as `uinput <file>`; the
+  configuration types are numbers (100 = UI_SET_EVBIT with data [1], 101 = UI_SET_KEYBIT with the Linux key codes):
+  `{"id":1,"command":"register","name":"Test remote","vid":4660,"pid":22136,"bus":"usb","configuration":[{"type":100,"data":[1]},{"type":101,"data":[264]}]}`,
+  then `{"id":1,"command":"delay","duration":1500}`, `{"id":1,"command":"inject","events":[1,264,1,0,0,0]}`, a 100 ms
+  delay and the release (`[1,264,0,0,0,0]`). Linux 264/265 are BUTTON_9/BUTTON_10 (Generic.kl), the Onn remote's app buttons.
+- An Onn remote's app buttons (keycodes 196, 197...) are taken by `com.droidlogic.GlobalKeyReceiver`, which opens the
+  app or its Play Store page before any window sees them; only the key filter (LinkService) gets them first. So
+  InputKeyActivity and BlockedKeysActivity get their presses from LinkService while open (0.1.1).
+- "Allow USB debugging?" jam: an ask the person didn't start (right after install, the box asleep) can leave adbd with
+  "prompt currently pending, skipping" and no question on screen; every later ask then hangs. A reboot clears it, and
+  the question shows at boot. Turn one-touch play off for that reboot or the TV wakes, and back on after.
+- Wi-Fi asleep: the box's chip (rtl8852bs) never looks for the network again after an access point restarts, and
+  Android ignores an app's own scan request, so Check asks for `cmd wifi start-scan` through SelfAdb (back within 3
+  minutes in a test). Offline is read from the interfaces, not ConnectivityManager, which hides the network from a
+  background app on a sleeping box. Can't be tested on an emulator.
+- Deep sleep (Doze) gives a wake-up alarm about 10 s of network, the box's own ADB included, so network jobs first ask
+  for 10 minutes (`SelfAdb.allowNetworkWhileAsleep`). A test broadcast to a box in deep sleep (`dumpsys deviceidle`,
+  mState=IDLE) times out unless it's first given `cmd deviceidle tempwhitelist -d 10000 <package>`.
+- From the PC, `input keyevent` on the box never reaches the TV, so what goes to the TV is only proven by a real press.
