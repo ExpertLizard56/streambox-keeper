@@ -18,6 +18,6 @@ public class TestRun extends BroadcastReceiver {
             } finally {
                 done.finish();
             }
-        }, "streaming-box-keeper-test").start();
+        }, "streambox-keeper-test").start();
     }
 }

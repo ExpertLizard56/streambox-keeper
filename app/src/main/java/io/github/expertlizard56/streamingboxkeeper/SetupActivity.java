@@ -23,7 +23,7 @@ public class SetupActivity extends Activity {
     }
 
     private void search() {
-        screen.start("Your TV", "The TV this box is plugged into. Streaming Box Keeper usually finds it by itself.");
+        screen.start("Your TV", "The TV this box is plugged into. StreamBox Keeper usually finds it by itself.");
         screen.card("Looking for TVs on the network…", null, null, null);
         new Thread(() -> {
             boolean allowed = SelfAdb.allowed(this);

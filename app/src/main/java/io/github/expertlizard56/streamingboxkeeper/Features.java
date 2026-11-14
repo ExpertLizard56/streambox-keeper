@@ -20,9 +20,9 @@ final class Features {
     static final String RESTART = "restart";
     /** The apps the person listed (AppSources) kept up to date while the box sleeps. */
     static final String APP_UPDATES = "appUpdates";
-    /** Streaming Box Keeper updates itself from its GitHub releases (Updater). */
+    /** StreamBox Keeper updates itself from its GitHub releases (Updater). */
     static final String SELF_UPDATE = "selfUpdate";
-    /** An app may hand Streaming Box Keeper a newer version of itself to install (InstallFor): only its own update. */
+    /** An app may hand StreamBox Keeper a newer version of itself to install (InstallFor): only its own update. */
     static final String INSTALL_FOR_APPS = "installForApps";
 
     /** Google Assistant stays off, so the remote's mic button can't start it, while apps keep the mic (Assistant). */

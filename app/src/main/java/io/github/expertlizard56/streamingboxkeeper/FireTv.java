@@ -20,7 +20,7 @@ import okio.BufferedSource;
  * to allow this box; answer Always allow. A small loop on the TV reports what it shows whenever that changes. Keys go
  * into the TV's virtual keyboard as real presses and releases, so a held arrow repeats on the TV like its own remote.
  * Inputs switch with the TV's own HDMI keys, pressed by FireKeys: a small program the box copies to the TV and keeps
- * running for the connection (streaming-box-keeper/firekeys), as the TV's own `input keyevent` takes ~0.9 s to start for
+ * running for the connection (streambox-keeper/firekeys), as the TV's own `input keyevent` takes ~0.9 s to start for
  * every key (Nov 8: box from the TV's home screen in 1.5 s, most of it that start). If it isn't running, `input
  * keyevent` still does it.
  */

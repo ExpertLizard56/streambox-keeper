@@ -164,7 +164,7 @@ final class Jobs {
 
     // --- cleanup and restart ---
 
-    private static final String TIDY_RESULT = "/data/local/tmp/streaming-box-keeper-tidy";
+    private static final String TIDY_RESULT = "/data/local/tmp/streambox-keeper-tidy";
 
     /**
      * Closes the background apps. "am kill-all" can close this app too (it's a background app between checks), so
@@ -266,7 +266,7 @@ final class Jobs {
         HttpURLConnection http = (HttpURLConnection) new URL(url).openConnection();
         http.setConnectTimeout(10000);
         http.setReadTimeout(20000);
-        http.setRequestProperty("User-Agent", "streaming-box-keeper");
+        http.setRequestProperty("User-Agent", "streambox-keeper");
         try (InputStream in = http.getInputStream()) {
             return new String(Streams.readAll(in), StandardCharsets.UTF_8);
         } finally {

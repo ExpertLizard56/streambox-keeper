@@ -65,8 +65,8 @@ public final class InstallFor extends BroadcastReceiver {
 
     /** Null when it went in, else why not. */
     private static String install(Context context, String asker, Uri apk) throws Exception {
-        if (!Features.on(context, Features.INSTALL_FOR_APPS)) return "switched off in Streaming Box Keeper";
-        if (!SelfAdb.knownAllowed(context)) return "the box hasn't allowed Streaming Box Keeper's ADB";
+        if (!Features.on(context, Features.INSTALL_FOR_APPS)) return "switched off in StreamBox Keeper";
+        if (!SelfAdb.knownAllowed(context)) return "the box hasn't allowed StreamBox Keeper's ADB";
         if (asker == null) return "unknown asker";
         File dir = new File(context.getCacheDir(), "install-for");
         if (!dir.isDirectory() && !dir.mkdirs()) return "no room";

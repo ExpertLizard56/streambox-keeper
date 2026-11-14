@@ -1,6 +1,6 @@
-# Streaming Box Keeper (public)
+# StreamBox Keeper (public)
 
-Streaming Box Keeper, for any Google TV / Android TV box. Any AI tool starts here (Claude Code reads it through
+StreamBox Keeper, for any Google TV / Android TV box. Any AI tool starts here (Claude Code reads it through
 `CLAUDE.md`). Made Nov 8 from the owner's private app. Since Nov 14 there is only this one version: the owner's boxes
 run it too, set up on its own screen like anyone's. A home-only need goes in a separate app (the box health report is
 Home Watch's box app, which reads `StatusProvider`), never into this one.
@@ -45,7 +45,7 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 | `Check` | 5-minute wake-up alarm: Wi-Fi rejoin, then the Google Assistant re-check (`Assistant`), then Jobs, then the daily self-update |
 | `Jobs` | Nightly cleanup, weekly restart (one-touch play off just for the restart); runs the app updates |
 | `AppSources`, `AppsActivity` | App updates for any app: a Downloader code (its aftv.news page names the link), a GitHub page (newest release, the file for this box's processor) or a direct .apk link; only the same package, newer, installs |
-| `Updater` | Self-update from this repository's GitHub releases (`streaming-box-keeper-<version>.apk`) |
+| `Updater` | Self-update from this repository's GitHub releases (`streambox-keeper-<version>.apk`) |
 | `SelfAdb` | The box's own ADB (127.0.0.1:5555), allowed once on the box |
 | `Assistant` | Google Assistant switched off (switch `ASSISTANT`, off until turned on), so the remote's mic button can't start it (on Google TV it does so from the remote's own voice signal, which no key filter sees): `pm disable-user --user 0 com.google.android.katniss`, then, only where `com.google.android.tts` is installed, Google TTS's recognition service put in `voice_recognition_service`, so apps' voice search keeps the mic (tested by hand on an Onn 4K Plus Nov 14). Back on: `pm enable`. Check re-reads both in one shell call at every wake-up and redoes whichever a system update undid. If the mic then sends no sound at all, the remote needs pairing again (the screen says so) |
 | `InstallFor` | Another app hands over its own newer version (broadcast `…INSTALL_UPDATE`, APK as a content: link, a PendingIntent for the answer) and it goes in through SelfAdb: an ADB install, which Google's 2027 developer verification leaves alone. Only the asker's own package, installed, same key, newer (switch `INSTALL_FOR_APPS`, on by default). Tested on the emulator Nov 9 with a TV app update (300 to 308) |
@@ -64,8 +64,8 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 ## Releasing
 
 Raise `versionCode` and `versionName` in `app/build.gradle`, build with the release key, and attach
-`streaming-box-keeper-<versionName>.apk` to a GitHub release tagged `v<versionName>`. Installed copies with "Update
-Streaming Box Keeper" on pick it up within a day.
+`streambox-keeper-<versionName>.apk` to a GitHub release tagged `v<versionName>`. Installed copies with "Update
+StreamBox Keeper" on pick it up within a day.
 
 ## Emulator notes
 

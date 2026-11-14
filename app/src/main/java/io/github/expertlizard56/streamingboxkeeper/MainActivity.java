@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         column.removeAllViews();
-        TextView title = text("Streaming Box Keeper", 36, Color.WHITE);
+        TextView title = text("StreamBox Keeper", 36, Color.WHITE);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         column.addView(title);
         TextView loading = text("Checking…", 18, 0x8CFFFFFF);
@@ -91,8 +91,8 @@ public class MainActivity extends Activity {
         boolean remoteOn = remoteServiceOn();
         if (!remoteOn) {
             View b = step(false, "Turn on the TV remote",
-                    allowed ? "Press the button to switch on Streaming Box Keeper's remote helper."
-                            : "Settings > Accessibility > Streaming Box Keeper: turn it on.",
+                    allowed ? "Press the button to switch on StreamBox Keeper's remote helper."
+                            : "Settings > Accessibility > StreamBox Keeper: turn it on.",
                     allowed ? "Turn on" : "Open Accessibility", v -> {
                         if (allowed) new Thread(() -> {
                             enableRemoteService();
@@ -107,7 +107,7 @@ public class MainActivity extends Activity {
         // 3. Which TV: found alone when it's clear, else picked from a list.
         TvConfig tv = TvConfig.load(this);
         View pick = step(tv != null, tv == null ? "Choose your TV" : "Your TV",
-                tv == null ? "A Roku TV or Fire TV on your network. Streaming Box Keeper usually finds it by itself."
+                tv == null ? "A Roku TV or Fire TV on your network. StreamBox Keeper usually finds it by itself."
                         : ("fire".equals(tv.kind) ? "Fire TV" : "Roku TV") + " at " + tv.address,
                 tv == null ? "Find my TV" : "Change", v -> startActivity(new Intent(this, SetupActivity.class)));
         if (first == null && tv == null && allowed) first = pick;
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
         int listed = AppSources.load(this).size();
         step(listed > 0, "Apps to keep updated", listed == 0 ? "None yet." : listed + (listed == 1 ? " app." : " apps."),
                 "Choose apps", v -> startActivity(new Intent(this, AppsActivity.class)));
-        feature(Features.SELF_UPDATE, "Update Streaming Box Keeper", "New versions from GitHub, installed automatically.");
+        feature(Features.SELF_UPDATE, "Update StreamBox Keeper", "New versions from GitHub, installed automatically.");
         feature(Features.INSTALL_FOR_APPS, "Let apps update themselves through it",
                 "An app that asks can hand over its own new version to be installed. Only its own, signed the same way.");
         assistantFeature(assistant);
@@ -278,7 +278,7 @@ public class MainActivity extends Activity {
         return on != null && on.contains(getPackageName() + "/");
     }
 
-    /** Adds Streaming Box Keeper's remote helper to the switched-on accessibility services, keeping the others. */
+    /** Adds StreamBox Keeper's remote helper to the switched-on accessibility services, keeping the others. */
     private void enableRemoteService() {
         String on = Settings.Secure.getString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         String mine = getPackageName() + "/.LinkService";

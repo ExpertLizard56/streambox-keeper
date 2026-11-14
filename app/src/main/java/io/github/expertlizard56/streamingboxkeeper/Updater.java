@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 import org.json.JSONObject;
 
 /**
- * Keeps Streaming Box Keeper itself current from its GitHub releases (Features.SELF_UPDATE): once a day it asks for the newest
+ * Keeps StreamBox Keeper itself current from its GitHub releases (Features.SELF_UPDATE): once a day it asks for the newest
  * release, and if its version is higher than this one, downloads its APK, checks it against GitHub's own SHA-256, and
  * installs it silently through SelfAdb. Android only accepts it if it's signed with the same key as the installed app,
  * so a copy built by someone else is never replaced by ours (or the other way round).
@@ -16,8 +16,8 @@ import org.json.JSONObject;
 final class Updater {
 
     private static final String TAG = "BoxUpdater";
-    /** The public repository whose releases carry streaming-box-keeper-<version>.apk. */
-    static final String REPO = "ExpertLizard56/streaming-box-keeper";
+    /** The public repository whose releases carry streambox-keeper-<version>.apk. */
+    static final String REPO = "ExpertLizard56/streambox-keeper";
 
     private Updater() {
     }
@@ -33,11 +33,14 @@ final class Updater {
             JSONObject asset = null;
             for (int i = 0; i < release.getJSONArray("assets").length(); i++) {
                 JSONObject a = release.getJSONArray("assets").getJSONObject(i);
-                if (a.getString("name").matches("streaming-box-keeper-[\\d.]+\\.apk")) asset = a;
+                if (a.getString("name").matches("streambox-keeper-[\\d.]+\\.apk")
+                        || a.getString("name").matches("streaming-box-keeper-[\\d.]+\\.apk")) {  // the name before 0.1.1
+                    asset = a;
+                }
             }
             if (asset == null) return;
             Log.i(TAG, "updating " + have + " -> " + tag);
-            File apk = new File(context.getCacheDir(), "streaming-box-keeper-update.apk");
+            File apk = new File(context.getCacheDir(), "streambox-keeper-update.apk");
             Jobs.download(asset.getString("browser_download_url"), apk);
             if (!Jobs.digestMatches(asset, apk)) {
                 Log.w(TAG, "the download doesn't match GitHub's checksum; not installing");
