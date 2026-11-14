@@ -140,7 +140,7 @@ public class MainActivity extends Activity {
         }
         View in = step(!clash, "Input button", input, "Change", v -> startActivity(new Intent(this, InputKeyActivity.class)));
         if (first == null && clash) first = in;
-        step(true, "Buttons that do nothing", BlockedKeys.describe(this), "Change",
+        step(true, "Disable remote buttons", BlockedKeys.describe(this), "Change",
                 v -> startActivity(new Intent(this, BlockedKeysActivity.class)));
 
         column.addView(heading("Features"));

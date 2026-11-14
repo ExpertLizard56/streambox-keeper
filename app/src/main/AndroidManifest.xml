@@ -60,7 +60,7 @@
             android:exported="false"
             android:theme="@android:style/Theme.Material.NoActionBar" />
 
-        <!-- Remote buttons that do nothing, from the main screen. -->
+        <!-- Disable remote buttons, from the main screen. -->
         <activity
             android:name=".BlockedKeysActivity"
             android:exported="false"

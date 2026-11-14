@@ -169,7 +169,7 @@ public class LinkService extends AccessibilityService {
         }
         boolean ready = tv != null && Features.on(this, Features.REMOTE);
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
-        // The Input button comes first, even before the buttons set to do nothing, and is taken so nothing else on the box acts on it.
+        // The Input button comes first, even before the disabled buttons, and is taken so nothing else on the box acts on it.
         if (ready && InputKey.is(this, code)) {
             if (down && event.getRepeatCount() == 0) inputKey();
             return true;

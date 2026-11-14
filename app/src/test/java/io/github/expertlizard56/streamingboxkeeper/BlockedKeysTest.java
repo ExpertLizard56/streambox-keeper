@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-/** The buttons that do nothing, kept as a comma list. */
+/** The disabled remote buttons, kept as a comma list. */
 public class BlockedKeysTest {
 
     @Test

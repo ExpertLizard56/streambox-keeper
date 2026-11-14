@@ -5,7 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Remote buttons that do nothing (LinkService takes them before the box sees them): an app button for an app that
+ * Disabled remote buttons (LinkService takes them before the box sees them): an app button for an app that
  * isn't installed opens the Play Store instead, say. Added on the app's screen by pressing them (BlockedKeysActivity);
  * the buttons InputKey.refusal names can't be, nor the Input button. Kept as a comma list in the "keeper" settings.
  */
