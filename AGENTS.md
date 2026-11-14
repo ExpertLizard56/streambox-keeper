@@ -1,17 +1,9 @@
 # Streaming Box Keeper (public)
 
-The public version of Streaming Box Keeper, for any Google TV / Android TV box. Any AI tool starts here (Claude Code
-reads it through `CLAUDE.md`). Made Nov 8 from the private app, which stays private and keeps running on the
-owner's boxes.
-
-## One app, two builds (since Nov 8)
-
-This repository is the app. A private build may compile this repository's `app/src/main` as-is and swap
-`app/src/edition` (the public build's empty `Edition`) for its own extras, so keep `app/src/main` self-contained.
-Every feature and fix is made here, once, and both get it; a change that only
-makes sense for the private build goes in its `Edition` instead. Keep `Edition`'s methods as they are (or
-change both), and don't move shared code into `app/src/edition`. Building the private version also needs this
-repository committed (its version adds both commit counts).
+Streaming Box Keeper, for any Google TV / Android TV box. Any AI tool starts here (Claude Code reads it through
+`CLAUDE.md`). Made Nov 8 from the owner's private app. Since Nov 14 there is only this one version: the owner's boxes
+run it too, set up on its own screen like anyone's. A home-only need goes in a separate app (the box health report is
+Home Watch's box app, which reads `StatusProvider`), never into this one.
 
 ## Rules
 
@@ -61,12 +53,13 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 | `InputKey`, `InputKeyActivity` | Which button opens the input menu: the Input button (screen-with-arrow symbol, `res/drawable/input_button.xml`, drawn into text by `InputKey.label`) and ★ always (the same symbol on different remotes: MACRO_1 on an Onn remote, FEATURED_APP_1 on others, so on an Onn remote FEATURED_APP_1 — its "Free TV" button — is not Input), plus an Onn remote's TV button; someone with another remote adds its button by pressing it (arrows, OK, Back, Home, power, volume can't be). While that screen is open LinkService takes no keys |
 | `RemoteSetup` | The remote's own power, volume and Input buttons as Google TV set them up (`dumpsys activity service com.google.android.tv.axel/.remote.IrService` through SelfAdb: NONE, IR, CEC, BROADCAST or a device name); the main screen's step opens Google TV's own wizard (`com.google.android.tv.IR_WIZARD`); warns when Input or ★ ("Magic", anything but "Software [...]") is set to switch the TV by infrared while it also opens the menu. Not on the emulator (no axel) |
 | `RemapApps` | A button-remapping app (Button Mapper...) gets the remote's buttons, except the Input button: the CleanYourTV home screen's own button helpers are switched off while one is on. Android hands each key to every key-filtering app at once, so a remapper mapped to the Input button acts too; if that pushes the input menu away within 0.9 s, LinkService opens it again |
-| `Edition` (app/src/edition) | This build's extras: none. A private build brings its own (start, feature defaults, jobs, test jobs, self-update, a key taken first) |
+| `BlockedKeys`, `BlockedKeysActivity` | Remote buttons that do nothing (an app button for an app that isn't installed): added on their own page by pressing them, each one a card that removes it; LinkService takes them first, after the Input button. The buttons InputKey refuses, and Input itself, can't be added |
+| `StatusProvider` | Read only, for another app on the box (a health monitor): `content://io.github.expertlizard56.streamingboxkeeper.status`, rows of name and value (version, lastTidy, lastRestart, lastAppUpdate, tvRemote, tvRemoteProblem). Nothing private goes in it: any app can read it |
 | `Tv`, `Roku`, `FireTv`, `TvConfig`, `TvFinder` | The TV: which one (found by itself), and talking to it |
 | `InputPanelActivity`, `SetupActivity` | The input menu; finding and picking the TV |
 | `Screen` | The one look of the app's own pages (title, line, cards with a white edge when chosen), like Apps To Keep Updated: every new page uses it |
 | `app/firekeys` | FireKeys, kept running on a Fire TV for fast input switching (build.sh puts it in assets) |
-| `app/src/test` | The unit tests the push hook runs: `Jobs.compare`, `AppSources.validSource`, `Updater.sha256`, `Assistant.parse`, `Streams` |
+| `app/src/test` | The unit tests the push hook runs: `Jobs.compare`, `AppSources.validSource`, `Updater.sha256`, `Assistant.parse`, `Streams`, `BlockedKeys` |
 
 ## Releasing
 

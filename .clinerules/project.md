@@ -5,9 +5,8 @@ above: don't read it again. Before anything else, read the `AGENTS.md` and doc f
 or decide goes back into them.
 
 This repository is the public app: nothing from the owner's home goes in it (no addresses, names, device lists, or
-home apps). Every feature and fix is made here, once: a private build may compile this repository's `app/src/main`
-as-is and swap `app/src/edition` for its own home extras. Keep `Edition`'s methods as they are (or change both
-builds), and don't move shared code into `app/src/edition`.
+home apps). It's the only version (the owner's boxes run it too, since Nov 14): a home-only need goes in a separate
+app, never in this one.
 
 Never without asking the owner first:
 - publishing a release (`AGENTS.md`, Releasing): the installed copies update themselves from it;

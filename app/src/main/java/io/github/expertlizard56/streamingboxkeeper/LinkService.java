@@ -162,12 +162,12 @@ public class LinkService extends AccessibilityService {
         if (InputKeyActivity.listening) return false;  // the person is adding a button: every press goes there
         boolean ready = tv != null && Features.on(this, Features.REMOTE);
         boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
-        // The Input button comes first, even before this build's own keys, and is taken so nothing else on the box acts on it.
+        // The Input button comes first, even before the buttons set to do nothing, and is taken so nothing else on the box acts on it.
         if (ready && InputKey.is(this, code)) {
             if (down && event.getRepeatCount() == 0) inputKey();
             return true;
         }
-        if (Edition.takesKey(code)) return true;
+        if (BlockedKeys.is(this, code)) return true;
         if (!ready) return false;
         if (!down) {
             if (ignored.remove(code)) return true;

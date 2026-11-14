@@ -40,10 +40,6 @@ android {
         }
     }
 
-    // The public build's Edition (adds nothing). A private build leaves this folder out and brings its own.
-    sourceSets {
-        main.java.srcDirs += 'src/edition/java'
-    }
 
     lint {
         abortOnError true

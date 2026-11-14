@@ -60,6 +60,18 @@
             android:exported="false"
             android:theme="@android:style/Theme.Material.NoActionBar" />
 
+        <!-- Remote buttons that do nothing, from the main screen. -->
+        <activity
+            android:name=".BlockedKeysActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+
+        <!-- What the main screen shows, read only, for another app on the box (a health monitor). -->
+        <provider
+            android:name=".StatusProvider"
+            android:authorities="io.github.expertlizard56.streamingboxkeeper.status"
+            android:exported="true" />
+
         <!-- Finding and picking the TV, from the main screen. -->
         <activity
             android:name=".SetupActivity"

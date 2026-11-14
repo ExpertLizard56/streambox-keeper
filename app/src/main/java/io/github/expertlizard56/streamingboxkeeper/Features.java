@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 /**
  * What the person has switched on, on the app's screen. Everything is on from the start except app updates, which
  * install other people's apps, and Google Assistant switched off, which changes the box's own app: both wait until the
- * person asks for them (Edition.featureDefault).
+ * person asks for them.
  */
 final class Features {
 
@@ -33,7 +33,7 @@ final class Features {
     }
 
     static boolean on(Context context, String feature) {
-        return prefs(context).getBoolean("feature." + feature, Edition.featureDefault(feature));
+        return prefs(context).getBoolean("feature." + feature, !APP_UPDATES.equals(feature) && !ASSISTANT.equals(feature));
     }
 
     static void set(Context context, String feature, boolean on) {

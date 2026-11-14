@@ -62,7 +62,6 @@ final class Jobs {
             tidy(context, prefs);
         }
         if (Features.on(context, Features.RESTART) && asleep && night) restartIfNeeded(context, prefs, now, force);
-        Edition.jobs(context, prefs, asleep, force);
     }
 
     /**
@@ -79,7 +78,7 @@ final class Jobs {
             case "detect": detect(context); break;
             case "update": Updater.check(context); break;
             case "restart": restartIfNeeded(context, prefs, System.currentTimeMillis(), true); break;
-            default: if (!Edition.runOne(context, job)) Log.w(TAG, "no job " + job);
+            default: Log.w(TAG, "no job " + job);
         }
     }
 
