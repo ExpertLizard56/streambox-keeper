@@ -21,7 +21,8 @@ import org.json.JSONObject;
  * anything that could be noticed only happens while the box sleeps. Each can be switched off on the app's screen
  * (Features).
  *  - App updates (off until switched on): once a day, the apps the person listed (AppSources: a GitHub page or a
- *    direct .apk link each), installed while the box sleeps. Android refuses one signed by anyone else.
+ *    direct .apk link each), installed when the app isn't in use (on screen or playing sound) or the box sleeps.
+ *    Android refuses one signed by anyone else.
  *  - Cleanup: once a night, 3-6 AM, asleep: close the background apps (am kill-all). After days on, a box can have
  *    hundreds of MB in swap and playback stutters; this frees most of it.
  *  - Restart: at most once a week, after that night's cleanup, if swap is still over 250 MB, asleep, and the TV isn't
@@ -53,7 +54,7 @@ final class Jobs {
                 SelfAdb.allowNetworkWhileAsleep(context);
                 AppSources.findUpdates(context);
             }
-            if (asleep) AppSources.installPending(context);
+            AppSources.installPending(context, asleep);
         }
         long tidiedAt = prefs.getLong("tidiedAt", 0);
         // A cleanup that never wrote its result isn't asked about for ever (each look opens the box's ADB).
@@ -74,7 +75,7 @@ final class Jobs {
         switch (job == null ? "" : job) {
             case "tidy": prefs.edit().putLong("tidiedAt", System.currentTimeMillis()).apply(); tidy(context, prefs); break;
             case "tidy-result": readTidy(context, prefs); break;
-            case "apps": AppSources.findUpdates(context); AppSources.installPending(context); break;
+            case "apps": AppSources.findUpdates(context); AppSources.installPending(context, false); break;
             case "detect": detect(context); break;
             case "update": Updater.check(context); break;
             case "restart": restartIfNeeded(context, prefs, System.currentTimeMillis(), true); break;

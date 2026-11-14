@@ -56,4 +56,15 @@ public class AppSourcesTest {
         offered.add("io.github.expertlizard56.homewatch.tv");
         assertTrue(AppSources.toOffer(offered, installed::contains).isEmpty());
     }
+
+    @Test
+    public void anAppInUseWaits() {
+        String report = "  topResumedActivity=ActivityRecord{28d7c0 u0 com.stremio.one/.MainActivity t63}\n"
+                + "  AudioPlaybackConfiguration piid:71 u/pid:10123/689 state:started attr:AudioAttributes\n";
+        assertTrue(AppSources.inUse(report, "com.stremio.one", 10200, false));
+        assertFalse(AppSources.inUse(report, "com.stremio.one", 10200, true));
+        assertTrue(AppSources.inUse(report, "org.music", 10123, true));
+        assertFalse(AppSources.inUse(report, "com.stremio", 10050, false));
+        assertFalse(AppSources.inUse("", "com.stremio.one", 10200, false));
+    }
 }

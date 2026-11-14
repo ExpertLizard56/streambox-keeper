@@ -21,8 +21,8 @@ the box while it sleeps.
 - **Disable remote buttons.** Press a remote button on its page to disable it, such as an app button for an app
   you don't have (which would open the Play Store).
 - **App updates (optional).** Keeps any app you choose up to date: give it the app's Downloader code (the numbers
-  you'd type into the Downloader app), its GitHub page, or a link to its .apk. Checked once a day, installed at night
-  while the box sleeps. It only installs the same app, newer, and Android refuses an update signed by anyone else.
+  you'd type into the Downloader app), its GitHub page, or a link to its .apk. Checked once a day, installed when the
+  app isn't on screen or playing sound. It only installs the same app, newer, and Android refuses an update signed by anyone else.
   StreamBox Keeper itself, SmartTube, Moonlight and [Home Watch](https://github.com/ExpertLizard56/home-watch) go on
   the list by themselves when they're on the box (take one off and it stays off). Its own updates install right away;
   switch app updates on to get them.

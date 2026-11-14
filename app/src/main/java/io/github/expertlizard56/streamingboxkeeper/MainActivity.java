@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
         feature(Features.RESTART, "Weekly restart when needed",
                 "At night, only if memory stays full and the TV is off.");
         feature(Features.APP_UPDATES, "Keep apps up to date",
-                "Apps you choose, from their GitHub pages or download links, installed at night.");
+                "Apps you choose, from their GitHub pages or download links, installed when they're not in use.");
         int listed = AppSources.load(this).size();
         step(listed > 0, "Apps to keep updated", listed == 0 ? "None yet." : listed + (listed == 1 ? " app." : " apps."),
                 "Choose apps", v -> startActivity(new Intent(this, AppsActivity.class)));

@@ -26,7 +26,8 @@ import org.json.JSONObject;
  * into the Downloader app; aftv.news/<code> names the link, looked up again at every check). Once a day each source is looked at; a file
  * is only installed if it's the same app (its package name, read from the download) and a higher version than the one
  * on the box. Android also refuses an update signed by anyone else, so a wrong link can't swap an app for another.
- * Downloads wait in the app's cache and install while the box sleeps (Jobs). StreamBox Keeper itself is on the list too
+ * Downloads wait in the app's cache and install as soon as the app isn't in use (not on screen, not playing sound), or
+ * while the box sleeps (Jobs). StreamBox Keeper itself is on the list too
  * (a known app, always on the box): its listing is checked by Updater instead, which installs it at once.
  */
 final class AppSources {
@@ -236,8 +237,8 @@ final class AppSources {
         }
         String version = info.versionName != null ? info.versionName : tag;
         prefs.edit().putString("pending." + app.pkg, version).apply();
-        Log.i(TAG, app.pkg + " " + version + " downloaded; installs while the box sleeps");
-        return "Version " + version + " installs tonight";
+        Log.i(TAG, app.pkg + " " + version + " downloaded; installs when it isn't in use");
+        return "Version " + version + " installs when it isn't in use";
     }
 
     /** The release's .apk for this box: one named for its processor type, else a universal one, else the only one. */
@@ -261,13 +262,27 @@ final class AppSources {
         return plain.size() >= 1 ? plain.get(0) : null;
     }
 
-    /** Installs what's waiting, while the box sleeps. */
-    static void installPending(Context context) {
+    /**
+     * Installs what's waiting, unless that app is in use: on screen (only while the box is awake: asleep, the last app
+     * still counts as on screen) or playing sound. Replacing an app stops it, but nothing else on the box or the TV.
+     */
+    static void installPending(Context context, boolean asleep) {
         SharedPreferences prefs = prefs(context);
+        String inUse = null;
         for (App app : load(context)) {
             String version = prefs.getString("pending." + app.pkg, null);
             if (version == null || app.pkg.equals(context.getPackageName())) continue;
             SelfAdb.allowNetworkWhileAsleep(context);  // pushing the APK goes through the box's ADB
+            try {
+                if (inUse == null) inUse = SelfAdb.shell(context, IN_USE);
+            } catch (Exception e) {
+                Log.i(TAG, "couldn't tell what's in use: " + e);
+                return;
+            }
+            if (inUse(inUse, app.pkg, uid(context, app.pkg), asleep)) {
+                Log.i(TAG, app.pkg + " is in use; its update waits");
+                continue;
+            }
             File apk = new File(context.getCacheDir(), app.pkg + ".apk");
             try {
                 String result = apk.exists() ? SelfAdb.install(context, apk) : "the download is gone";
@@ -285,6 +300,30 @@ final class AppSources {
             } catch (Exception e) {
                 Log.i(TAG, app.pkg + " not installed yet: " + e);
             }
+        }
+    }
+
+    /** One shell call: the app on screen, and the sound players that are playing (each with its app's uid). */
+    static final String IN_USE = "dumpsys activity activities | grep -m1 -E 'topResumedActivity|mResumedActivity'; "
+            + "dumpsys audio | grep AudioPlaybackConfiguration | grep 'state:started'";
+
+    /** Whether IN_USE's output shows the app on screen (only counted awake) or playing sound. */
+    static boolean inUse(String report, String pkg, int uid, boolean asleep) {
+        for (String line : report.split("\n")) {
+            if (line.contains("ResumedActivity")) {
+                if (!asleep && line.contains(" " + pkg + "/")) return true;
+            } else if (uid >= 0 && line.contains("state:started") && line.contains("u/pid:" + uid + "/")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int uid(Context context, String pkg) {
+        try {
+            return context.getPackageManager().getApplicationInfo(pkg, 0).uid;
+        } catch (PackageManager.NameNotFoundException e) {
+            return -1;
         }
     }
 

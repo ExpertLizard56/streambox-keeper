@@ -57,7 +57,7 @@ public class AppsActivity extends Activity {
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         column.addView(title);
         TextView about = text(Features.on(this, Features.APP_UPDATES)
-                ? "Checked once a day; updates install at night while the box sleeps."
+                ? "Checked once a day; an update installs when its app isn't on screen or playing sound."
                 : "App updates are switched off on the main screen: nothing here is checked until they're on.", 16, 0x99FFFFFF);
         about.setPadding(0, dp(6), 0, dp(24));
         column.addView(about);
