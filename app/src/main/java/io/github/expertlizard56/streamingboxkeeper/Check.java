@@ -21,7 +21,8 @@ import java.util.Collections;
  * request isn't ignored: every 5 minutes a wake-up alarm checks the network, and offline it asks for "cmd wifi
  * start-scan" through the box's own ADB (SelfAdb), up to a minute; Android then rejoins. The screen stays off and the
  * TV is never touched. Connected, on Wi-Fi or Ethernet, it runs the upkeep jobs (Jobs), and once a day looks for a
- * newer Streaming Box Keeper on GitHub (Updater, Features.SELF_UPDATE).
+ * newer Streaming Box Keeper on GitHub (Updater, Features.SELF_UPDATE). With Google Assistant switched off
+ * (Assistant, Features.ASSISTANT) it also re-reads both halves of that, since a system update can undo either.
  */
 public class Check extends BroadcastReceiver {
 
@@ -58,6 +59,9 @@ public class Check extends BroadcastReceiver {
             try {
                 if (!connected(context) && Features.on(context, Features.WIFI)) rejoin(context);
                 if (connected(context)) {
+                    // Switched on, Google Assistant and the mic's voice engine are re-checked at every wake-up, because
+                    // a system update can undo either (Assistant).
+                    if (Features.on(context, Features.ASSISTANT)) Assistant.keepOff(context);
                     updateDaily(context);
                     Jobs.run(context, false);
                 }

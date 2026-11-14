@@ -15,6 +15,9 @@ the box while it sleeps.
 - **Nightly cleanup.** Closes background apps at night while the box sleeps, so it stays quick.
 - **Weekly restart when needed.** At night, only if memory stays full after the cleanup, and never while the TV
   is on.
+- **Google Assistant off (optional).** The remote's mic button stops starting Google Assistant, while voice search in
+  apps keeps the mic. Switched back on any time; if the mic then sends no sound at all, pair the remote again
+  (Settings > Remotes & Accessories).
 - **App updates (optional).** Keeps any app you choose up to date: give it the app's Downloader code (the numbers
   you'd type into the Downloader app), its GitHub page, or a link to its .apk. Checked once a day, installed at night
   while the box sleeps. It only installs the same app, newer, and Android refuses an update signed by anyone else.

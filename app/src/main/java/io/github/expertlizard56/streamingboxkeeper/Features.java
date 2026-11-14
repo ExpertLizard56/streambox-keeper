@@ -5,7 +5,8 @@ import android.content.SharedPreferences;
 
 /**
  * What the person has switched on, on the app's screen. Everything is on from the start except app updates, which
- * install other people's apps and so wait until the person asks for them.
+ * install other people's apps, and Google Assistant switched off, which changes the box's own app: both wait until the
+ * person asks for them (Edition.featureDefault).
  */
 final class Features {
 
@@ -24,7 +25,9 @@ final class Features {
     /** An app may hand Streaming Box Keeper a newer version of itself to install (InstallFor): only its own update. */
     static final String INSTALL_FOR_APPS = "installForApps";
 
-    static final String[] ALL = {REMOTE, WIFI, CLEANUP, RESTART, APP_UPDATES, SELF_UPDATE, INSTALL_FOR_APPS};
+    /** Google Assistant stays off, so the remote's mic button can't start it, while apps keep the mic (Assistant). */
+    static final String ASSISTANT = "assistant";
+    static final String[] ALL = {REMOTE, WIFI, CLEANUP, RESTART, APP_UPDATES, SELF_UPDATE, INSTALL_FOR_APPS, ASSISTANT};
 
     private Features() {
     }

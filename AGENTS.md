@@ -50,11 +50,12 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 | --- | --- |
 | `MainActivity` | The app's screen: set-up steps, feature switches, last done |
 | `Features` | The switches |
-| `Check` | 5-minute wake-up alarm: Wi-Fi rejoin, then Jobs, then the daily self-update |
+| `Check` | 5-minute wake-up alarm: Wi-Fi rejoin, then the Google Assistant re-check (`Assistant`), then Jobs, then the daily self-update |
 | `Jobs` | Nightly cleanup, weekly restart (one-touch play off just for the restart); runs the app updates |
 | `AppSources`, `AppsActivity` | App updates for any app: a Downloader code (its aftv.news page names the link), a GitHub page (newest release, the file for this box's processor) or a direct .apk link; only the same package, newer, installs |
 | `Updater` | Self-update from this repository's GitHub releases (`streaming-box-keeper-<version>.apk`) |
 | `SelfAdb` | The box's own ADB (127.0.0.1:5555), allowed once on the box |
+| `Assistant` | Google Assistant switched off (switch `ASSISTANT`, off until turned on), so the remote's mic button can't start it (on Google TV it does so from the remote's own voice signal, which no key filter sees): `pm disable-user --user 0 com.google.android.katniss`, then, only where `com.google.android.tts` is installed, Google TTS's recognition service put in `voice_recognition_service`, so apps' voice search keeps the mic (tested by hand on an Onn 4K Plus Nov 14). Back on: `pm enable`. Check re-reads both in one shell call at every wake-up and redoes whichever a system update undid. If the mic then sends no sound at all, the remote needs pairing again (the screen says so) |
 | `InstallFor` | Another app hands over its own newer version (broadcast `…INSTALL_UPDATE`, APK as a content: link, a PendingIntent for the answer) and it goes in through SelfAdb: an ADB install, which Google's 2027 developer verification leaves alone. Only the asker's own package, installed, same key, newer (switch `INSTALL_FOR_APPS`, on by default). Tested on the emulator Nov 9 with a TV app update (300 to 308) |
 | `LinkService` | The TV remote (accessibility service): forwards keys while the TV is elsewhere, the Input button |
 | `InputKey`, `InputKeyActivity` | Which button opens the input menu: the Input button (screen-with-arrow symbol, `res/drawable/input_button.xml`, drawn into text by `InputKey.label`) and ★ always (the same button on different remotes), plus an Onn remote's TV button; someone with another remote adds its button by pressing it (arrows, OK, Back, Home, power, volume can't be). While that screen is open LinkService takes no keys |
@@ -65,7 +66,7 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 | `InputPanelActivity`, `SetupActivity` | The input menu; finding and picking the TV |
 | `Screen` | The one look of the app's own pages (title, line, cards with a white edge when chosen), like Apps To Keep Updated: every new page uses it |
 | `app/firekeys` | FireKeys, kept running on a Fire TV for fast input switching (build.sh puts it in assets) |
-| `app/src/test` | The unit tests the push hook runs: `Jobs.compare`, `AppSources.validSource`, `Updater.sha256`, `Streams` |
+| `app/src/test` | The unit tests the push hook runs: `Jobs.compare`, `AppSources.validSource`, `Updater.sha256`, `Assistant.parse`, `Streams` |
 
 ## Releasing
 
@@ -76,6 +77,8 @@ Streaming Box Keeper" on pick it up within a day.
 ## Emulator notes
 
 `adb shell input keyevent` (any source) never reaches LinkService's key filter, and the emulator console's key events
-don't arrive either, so what a remote button does there is only tested with a real remote. The emulator never shows the "Allow USB debugging?" question, so system access (and with it installing and switching
-the remote on in one press) is only tested on a real box. The main screen only makes the box ask when Ask now is
+don't arrive either, so what a remote button does there is only tested with a real remote. The `onn_s905x5m` emulator
+(Android 14) does show the "Allow USB debugging?" question (Nov 14: Ask now, tick Always allow, allow it), so system
+access (and with it installing and switching the remote on in one press, and the Assistant switch) can be tested there.
+The main screen only makes the box ask when Ask now is pressed
 pressed (`SelfAdb.knownAllowed`).

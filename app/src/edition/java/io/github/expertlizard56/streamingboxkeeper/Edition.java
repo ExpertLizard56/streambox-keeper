@@ -19,7 +19,9 @@ final class Edition {
 
     /** A feature's setting before the person has touched it. */
     static boolean featureDefault(String feature) {
-        return !Features.APP_UPDATES.equals(feature);
+        // App updates install other people's apps, and the Assistant switch changes the box's own app: both off until
+        // the person asks for them.
+        return !Features.APP_UPDATES.equals(feature) && !Features.ASSISTANT.equals(feature);
     }
 
     /** At the end of each 5-minute check while online (Jobs.run): this build's own upkeep jobs. */

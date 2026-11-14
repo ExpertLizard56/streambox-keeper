@@ -56,14 +56,15 @@ public class MainActivity extends Activity {
             // Checked again only if it was allowed before: a first check would make the box ask on its own.
             boolean allowed = debugging && SelfAdb.knownAllowed(this) && SelfAdb.allowed(this);
             RemoteSetup remote = allowed ? RemoteSetup.read(this) : null;
+            Assistant.State assistant = allowed ? Assistant.read(this) : null;
             runOnUiThread(() -> {
                 column.removeView(loading);
-                build(debugging, allowed, remote);
+                build(debugging, allowed, remote, assistant);
             });
         }, "status").start();
     }
 
-    private void build(boolean debugging, boolean allowed, RemoteSetup remote) {
+    private void build(boolean debugging, boolean allowed, RemoteSetup remote, Assistant.State assistant) {
         View first = null;
 
         column.addView(heading("Set up"));
@@ -156,6 +157,7 @@ public class MainActivity extends Activity {
         feature(Features.SELF_UPDATE, "Update Streaming Box Keeper", "New versions from GitHub, installed automatically.");
         feature(Features.INSTALL_FOR_APPS, "Let apps update themselves through it",
                 "An app that asks can hand over its own new version to be installed. Only its own, signed the same way.");
+        assistantFeature(assistant);
 
         column.addView(heading("Last done"));
         android.content.SharedPreferences prefs = getSharedPreferences("keeper", MODE_PRIVATE);
@@ -211,6 +213,59 @@ public class MainActivity extends Activity {
             boolean on = !toggle.isChecked();
             toggle.setChecked(on);
             Features.set(this, feature, on);
+        });
+        column.addView(row, cardSize());
+        return row;
+    }
+
+    /**
+     * The Google Assistant switch. Unlike the others it switches one of the box's own apps off through the box's own
+     * ADB (Assistant), so it does that as it's flipped, and says so when this box has no Google Assistant to switch off.
+     */
+    private View assistantFeature(Assistant.State state) {
+        boolean present = state == null || state.installed;
+        String explain = present
+                ? "Apps can still use the mic, so voice search keeps working in them. If the mic sends no sound at all,"
+                        + " pair the remote again: Settings > Remotes & Accessories, forget it, then hold Back + Home."
+                : "Google Assistant isn't on this box, so there's nothing to switch off.";
+        LinearLayout row = card();
+        row.setFocusable(true);
+        row.setBackground(buttonBackground());
+        LinearLayout words = new LinearLayout(this);
+        words.setOrientation(LinearLayout.VERTICAL);
+        words.addView(text("Turn off Google Assistant", 20, Color.WHITE));
+        TextView detail = text(explain, 15, 0x99FFFFFF);
+        words.addView(detail);
+        row.addView(words, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        final Switch toggle = new Switch(this);
+        toggle.setChecked(present && Features.on(this, Features.ASSISTANT));
+        toggle.setFocusable(false);
+        toggle.setClickable(false);
+        row.addView(toggle);
+        // Switched on but the box doesn't agree (a system update put it back): the next check fixes it.
+        if (present && Features.on(this, Features.ASSISTANT) && state != null && !state.done()) {
+            String waiting = "Not off yet: the next check switches it off. " + explain;
+            detail.setText(waiting);
+        }
+        row.setOnClickListener(v -> {
+            if (!present) return;  // nothing to switch off, and the line above says why
+            boolean on = !toggle.isChecked();
+            toggle.setChecked(on);
+            Features.set(this, Features.ASSISTANT, on);
+            final String working = on ? "Turning Google Assistant off…" : "Turning it back on…";
+            detail.setText(working);
+            new Thread(() -> {
+                String result;
+                try {
+                    if (on) Assistant.turnOff(this);
+                    else Assistant.turnOn(this);
+                    result = on ? "Off. " + explain : "Back on. " + explain;
+                } catch (Exception e) {
+                    result = "Couldn't change it: it needs system access (step 1). " + explain;
+                }
+                final String said = result;
+                runOnUiThread(() -> detail.setText(said));
+            }, "assistant").start();
         });
         column.addView(row, cardSize());
         return row;
