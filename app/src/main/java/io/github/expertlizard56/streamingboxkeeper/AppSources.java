@@ -26,7 +26,8 @@ import org.json.JSONObject;
  * into the Downloader app; aftv.news/<code> names the link, looked up again at every check). Once a day each source is looked at; a file
  * is only installed if it's the same app (its package name, read from the download) and a higher version than the one
  * on the box. Android also refuses an update signed by anyone else, so a wrong link can't swap an app for another.
- * Downloads wait in the app's cache and install while the box sleeps (Jobs).
+ * Downloads wait in the app's cache and install while the box sleeps (Jobs). StreamBox Keeper itself is on the list too
+ * (a known app, always on the box): its listing is checked by Updater instead, which installs it at once.
  */
 final class AppSources {
 
@@ -50,6 +51,7 @@ final class AppSources {
 
     /** Ready-made sources, offered when the app is on the box: package, GitHub page. */
     static final String[][] KNOWN = {
+            {"io.github.expertlizard56.streamingboxkeeper", "github.com/" + Updater.REPO},
             {"org.smarttube.stable", "github.com/yuliskov/SmartTube"},
             {"org.smarttube.beta", "github.com/yuliskov/SmartTube"},
             {"com.limelight", "github.com/moonlight-stream/moonlight-android"},
@@ -146,6 +148,7 @@ final class AppSources {
     static void findUpdates(Context context) {
         SharedPreferences prefs = prefs(context);
         for (App app : load(context)) {
+            if (app.pkg.equals(context.getPackageName())) continue;  // Updater's
             long have = installedCode(context, app.pkg);
             if (have < 0) {
                 setStatus(prefs, app.pkg, "Not on this box");
@@ -263,7 +266,7 @@ final class AppSources {
         SharedPreferences prefs = prefs(context);
         for (App app : load(context)) {
             String version = prefs.getString("pending." + app.pkg, null);
-            if (version == null) continue;
+            if (version == null || app.pkg.equals(context.getPackageName())) continue;
             SelfAdb.allowNetworkWhileAsleep(context);  // pushing the APK goes through the box's ADB
             File apk = new File(context.getCacheDir(), app.pkg + ".apk");
             try {
@@ -303,7 +306,12 @@ final class AppSources {
         }
     }
 
-    private static void setStatus(SharedPreferences prefs, String pkg, String status) {
+    /** Whether this app is on the list. */
+    static boolean listed(Context context, String pkg) {
+        return load(context).stream().anyMatch(a -> a.pkg.equals(pkg));
+    }
+
+    static void setStatus(SharedPreferences prefs, String pkg, String status) {
         prefs.edit().putString("status." + pkg, status).apply();
     }
 

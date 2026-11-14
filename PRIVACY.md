@@ -8,7 +8,7 @@ StreamBox Keeper collects nothing and sends nothing about you anywhere.
   box, except the button presses below.
 - **Your TV:** while the TV is on another input, the remote's arrows, OK, Back and play keys are sent to your TV over
   your home network. It also asks the TV what it's showing.
-- **Updates:** only if "Update StreamBox Keeper" or "Keep apps up to date" is on, it checks once a day with GitHub,
+- **Updates:** only if "Keep apps up to date" is on, it checks once a day with GitHub,
   with the links you gave it, or with aftv.news for Downloader codes, and downloads what's newer. Those sites see your
   network address, as with any download.
 - **Accessibility:** the remote helper is an accessibility service because that's the only way an app can see the

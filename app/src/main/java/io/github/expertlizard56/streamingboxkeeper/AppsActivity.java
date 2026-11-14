@@ -73,6 +73,16 @@ public class AppsActivity extends Activity {
     }
 
     private void changeOrRemove(AppSources.App app) {
+        if (app.pkg.equals(getPackageName())) {  // its updates only come from its own GitHub page
+            new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
+                    .setTitle(AppSources.label(this, app.pkg))
+                    .setItems(new String[] {"Stop updating it"}, (d, which) -> {
+                        AppSources.remove(this, app.pkg);
+                        build();
+                    })
+                    .show();
+            return;
+        }
         new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
                 .setTitle(AppSources.label(this, app.pkg))
                 .setItems(new String[] {"Change where updates come from", "Stop updating it"}, (d, which) -> {
@@ -95,7 +105,7 @@ public class AppsActivity extends Activity {
             for (ResolveInfo info : pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(category), 0)) {
                 String pkg = info.activityInfo.packageName;
                 boolean system = (info.activityInfo.applicationInfo.flags & android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0;
-                if (system || pkg.equals(getPackageName()) || listed.contains(pkg)) continue;
+                if (system || listed.contains(pkg)) continue;
                 apps.put(info.loadLabel(pm).toString() + " ", pkg);
             }
         }
@@ -108,7 +118,15 @@ public class AppsActivity extends Activity {
         List<String> pkgs = new ArrayList<>(apps.values());
         new AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_DARK)
                 .setTitle("Which App?")
-                .setItems(names.toArray(new String[0]), (d, which) -> askSource(pkgs.get(which), knownSource(pkgs.get(which))))
+                .setItems(names.toArray(new String[0]), (d, which) -> {
+                    String pkg = pkgs.get(which);
+                    if (pkg.equals(getPackageName())) {
+                        AppSources.add(this, pkg, knownSource(pkg));
+                        build();
+                    } else {
+                        askSource(pkg, knownSource(pkg));
+                    }
+                })
                 .show();
     }
 
