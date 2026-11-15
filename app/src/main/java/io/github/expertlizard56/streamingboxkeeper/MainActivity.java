@@ -173,7 +173,8 @@ public class MainActivity extends Activity {
 
         column.addView(heading("Last done"));
         android.content.SharedPreferences prefs = getSharedPreferences("keeper", MODE_PRIVATE);
-        String[][] items = {{"lastTidy", "Cleanup"}, {"lastRestart", "Restart"}, {"lastAppUpdate", "App update"}};
+        String[][] items = {{"lastTidy", "Cleanup"}, {"lastRestart", "Restart"}, {"lastAppUpdate", "App update"},
+                {"lastRejoin", "Wi-Fi rejoin"}, {"lastSelfUpdate", "Self-update"}, {"selfUpdateCheck", "Update check"}};
         for (String[] item : items) {
             column.addView(text(item[1] + ": " + prefs.getString(item[0], "Not Yet"), 16, 0xB3FFFFFF));
         }

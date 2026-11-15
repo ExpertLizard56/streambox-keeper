@@ -40,7 +40,7 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 
 | File | What |
 | --- | --- |
-| `MainActivity` | The app's screen: set-up steps, feature switches, last done |
+| `MainActivity` | The app's screen: set-up steps, feature switches, last done (Cleanup, Restart, App update, Wi-Fi rejoin `lastRejoin`, Self-update `lastSelfUpdate`, Update check `selfUpdateCheck`: every self-update check's result, worded by `Updater.checkWords`) |
 | `Features` | The switches |
 | `Check` | 5-minute wake-up alarm: Keep my settings first (`KeepSettings`), then Wi-Fi rejoin, then the Google Assistant re-check (`Assistant`), then Jobs, then the daily self-update (when app updates are on and it's on their list) |
 | `Jobs` | Nightly cleanup, weekly restart (one-touch play off just for the restart); runs the app updates |
@@ -61,7 +61,7 @@ install`. A failed check stops the commit or push: fix what it says, and never s
 | `InputPanelActivity`, `SetupActivity` | The input menu; finding and picking the TV |
 | `Screen` | The one look of the app's own pages (title, line, cards with a white edge when chosen), like Apps To Keep Updated: every new page uses it |
 | `app/firekeys` | FireKeys, kept running on a Fire TV for fast input switching (build.sh puts it in assets) |
-| `app/src/test` | The unit tests the push hook runs: `Jobs.compare`, `AppSources.validSource`, `Updater.sha256`, `Assistant.parse`, `Streams`, `BlockedKeys`, `RemoteMic.parse`, `KeptSettings` |
+| `app/src/test` | The unit tests the push hook runs: `Jobs.compare`, `AppSources.validSource`, `Updater.sha256`, `Assistant.parse`, `Streams`, `BlockedKeys`, `RemoteMic.parse`, `KeptSettings`, `Updater.checkWords` |
 
 ## Releasing
 

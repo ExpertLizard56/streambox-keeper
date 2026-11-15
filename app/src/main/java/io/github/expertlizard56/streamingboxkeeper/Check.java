@@ -75,7 +75,8 @@ public class Check extends BroadcastReceiver {
     }
 
     private static void rejoin(Context context) {
-        long until = SystemClock.elapsedRealtime() + SCAN_FOR_MS;
+        long started = SystemClock.elapsedRealtime();
+        long until = started + SCAN_FOR_MS;
         long nextScan = 0;
         while (!connected(context) && SystemClock.elapsedRealtime() < until) {
             if (SystemClock.elapsedRealtime() >= nextScan) {
@@ -89,7 +90,13 @@ public class Check extends BroadcastReceiver {
             }
             SystemClock.sleep(1000);
         }
-        Log.i(TAG, connected(context) ? "back on the network" : "still not connected; next try in 5 minutes");
+        boolean back = connected(context);
+        Log.i(TAG, back ? "back on the network" : "still not connected; next try in 5 minutes");
+        if (back) {
+            long seconds = (SystemClock.elapsedRealtime() - started) / 1000;
+            Jobs.note(context.getSharedPreferences("keeper", Context.MODE_PRIVATE), "lastRejoin",
+                    "back online after " + seconds + " s");
+        }
     }
 
     private static void updateDaily(Context context) {
@@ -99,6 +106,8 @@ public class Check extends BroadcastReceiver {
         prefs.edit().putLong("updateCheckedAt", now).apply();
         if (Features.on(context, Features.APP_UPDATES) && AppSources.listed(context, context.getPackageName())) {
             Updater.check(context);
+        } else {
+            Updater.noteCheck(context, Updater.Outcome.OFF, null);
         }
     }
 
