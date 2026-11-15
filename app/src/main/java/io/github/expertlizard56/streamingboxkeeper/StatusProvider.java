@@ -16,6 +16,7 @@ import android.net.Uri;
  *   lastTidy         when the last cleanup ran and what it freed ("Not Yet" until then)
  *   lastRestart      the same for the weekly restart
  *   lastAppUpdate    the last app it updated
+ *   lastSettingsFix  when Keep my settings last put settings back after a firmware update, and which; empty until then
  *   tvRemote         the TV remote in words (LinkService.describe)
  *   tvRemoteProblem  what's wrong with it, or empty
  */
@@ -36,6 +37,7 @@ public class StatusProvider extends ContentProvider {
         for (String key : new String[] {"lastTidy", "lastRestart", "lastAppUpdate"}) {
             rows.addRow(new Object[] {key, prefs.getString(key, "Not Yet")});
         }
+        rows.addRow(new Object[] {"lastSettingsFix", prefs.getString("lastSettingsFix", "")});
         rows.addRow(new Object[] {"tvRemote", LinkService.describe(context)});
         String problem = LinkService.problem(context);
         rows.addRow(new Object[] {"tvRemoteProblem", problem == null ? "" : problem});

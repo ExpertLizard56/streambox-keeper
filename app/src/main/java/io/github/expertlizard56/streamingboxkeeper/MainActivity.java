@@ -169,6 +169,7 @@ public class MainActivity extends Activity {
         feature(Features.INSTALL_FOR_APPS, "Let apps update themselves through it",
                 "An app that asks can hand over its own new version to be installed. Only its own, signed the same way.");
         assistantFeature(assistant);
+        keepSettingsFeature();
 
         column.addView(heading("Last done"));
         android.content.SharedPreferences prefs = getSharedPreferences("keeper", MODE_PRIVATE);
@@ -280,6 +281,61 @@ public class MainActivity extends Activity {
         });
         column.addView(row, cardSize());
         return row;
+    }
+
+    /**
+     * Keep my settings (KeepSettings): the switch, what's remembered and the last put-back. Switched on, it remembers
+     * the box as it is right away.
+     */
+    private View keepSettingsFeature() {
+        LinearLayout row = card();
+        row.setFocusable(true);
+        row.setBackground(buttonBackground());
+        LinearLayout words = new LinearLayout(this);
+        words.setOrientation(LinearLayout.VERTICAL);
+        words.addView(text("Keep my settings", 20, Color.WHITE));
+        TextView detail = text(keepSettingsWords(), 15, 0x99FFFFFF);
+        words.addView(detail);
+        row.addView(words, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        Switch toggle = new Switch(this);
+        toggle.setChecked(Features.on(this, Features.KEEP_SETTINGS));
+        toggle.setFocusable(false);
+        toggle.setClickable(false);
+        row.addView(toggle);
+        row.setOnClickListener(v -> {
+            boolean on = !toggle.isChecked();
+            toggle.setChecked(on);
+            Features.set(this, Features.KEEP_SETTINGS, on);
+            if (!on) {
+                detail.setText(keepSettingsWords());
+                return;
+            }
+            detail.setText("Remembering this box's settings…");
+            new Thread(() -> {
+                KeepSettings.start(this);
+                runOnUiThread(() -> detail.setText(keepSettingsWords()));
+            }, "keep-settings").start();
+        });
+        column.addView(row, cardSize());
+        return row;
+    }
+
+    private String keepSettingsWords() {
+        StringBuilder s = new StringBuilder("After a system update, puts back the settings it reset: frame rate matching,"
+                + " HDR output, screen saver, home screen and the TV remote helper. Your own changes are kept.");
+        if (!Features.on(this, Features.KEEP_SETTINGS)) return s.toString();
+        java.util.Map<String, String> kept = KeepSettings.remembered(this);
+        if (kept.isEmpty()) {
+            s.append("\nNothing remembered yet: it needs system access (step 1).");
+        } else {
+            s.append("\nRemembered:");
+            for (java.util.Map.Entry<String, String> e : kept.entrySet()) {
+                s.append("\n  ").append(KeptSettings.label(e.getKey())).append(": ").append(e.getValue());
+            }
+        }
+        String fix = getSharedPreferences("keeper", MODE_PRIVATE).getString("lastSettingsFix", null);
+        s.append("\nLast put back: ").append(fix == null ? "Not Yet" : fix);
+        return s.toString();
     }
 
     private boolean remoteServiceOn() {

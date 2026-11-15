@@ -22,7 +22,8 @@ import java.util.Collections;
  * start-scan" through the box's own ADB (SelfAdb), up to a minute; Android then rejoins. The screen stays off and the
  * TV is never touched. Connected, on Wi-Fi or Ethernet, it runs the upkeep jobs (Jobs), and once a day looks for a
  * newer StreamBox Keeper on GitHub (Updater, when it's on the app updates list and those are on). With Google Assistant switched off
- * (Assistant, Features.ASSISTANT) it also re-reads both halves of that, since a system update can undo either.
+ * (Assistant, Features.ASSISTANT) it also re-reads both halves of that, since a system update can undo either. With
+ * Keep my settings on (KeepSettings) it first puts back what a firmware update reset.
  */
 public class Check extends BroadcastReceiver {
 
@@ -57,6 +58,8 @@ public class Check extends BroadcastReceiver {
         awake.acquire(10 * 60 * 1000);  // a download and an install fit easily
         new Thread(() -> {
             try {
+                // First, so settings a firmware update reset are back before anything else runs (KeepSettings).
+                if (Features.on(context, Features.KEEP_SETTINGS)) KeepSettings.run(context);
                 if (!connected(context) && Features.on(context, Features.WIFI)) rejoin(context);
                 if (connected(context)) {
                     // Switched on, Google Assistant and the mic's voice engine are re-checked at every wake-up, because
