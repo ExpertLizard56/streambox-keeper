@@ -18,6 +18,8 @@ the box while it sleeps.
 - **Google Assistant off (optional).** The remote's mic button stops starting Google Assistant, while voice search in
   apps keeps the mic. Switched back on any time; if the mic then sends no sound at all, pair the remote again
   (Settings > Remotes & Accessories).
+- **Remote mic check.** If the remote's buttons work but Google TV never set up its mic (so voice search hears
+  nothing), the app's screen says so and how to fix it: forget the remote and pair it again.
 - **Disable remote buttons.** Press a remote button on its page to disable it, such as an app button for an app
   you don't have (which would open the Play Store).
 - **App updates (optional).** Keeps any app you choose up to date: give it the app's Downloader code (the numbers

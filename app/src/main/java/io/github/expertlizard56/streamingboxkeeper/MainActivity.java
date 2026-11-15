@@ -57,14 +57,16 @@ public class MainActivity extends Activity {
             boolean allowed = debugging && SelfAdb.knownAllowed(this) && SelfAdb.allowed(this);
             RemoteSetup remote = allowed ? RemoteSetup.read(this) : null;
             Assistant.State assistant = allowed ? Assistant.read(this) : null;
+            RemoteMic.State mic = allowed ? RemoteMic.read(this) : null;
             runOnUiThread(() -> {
                 column.removeView(loading);
-                build(debugging, allowed, remote, assistant);
+                build(debugging, allowed, remote, assistant, mic);
             });
         }, "status").start();
     }
 
-    private void build(boolean debugging, boolean allowed, RemoteSetup remote, Assistant.State assistant) {
+    private void build(boolean debugging, boolean allowed, RemoteSetup remote, Assistant.State assistant,
+            RemoteMic.State mic) {
         View first = null;
 
         column.addView(heading("Set up"));
@@ -120,6 +122,14 @@ public class MainActivity extends Activity {
             View b = step(done, done ? "Remote's power and volume" : "Set up the remote's power and volume", detail,
                     done ? "Change" : "Set up", v -> openSettings(RemoteSetup.WIZARD));
             if (first == null && !done) first = b;
+        }
+        // The remote's mic: bonded, but Google TV's remote service never set it up (RemoteMic). Only said when it's so.
+        if (mic != null && mic.broken != null) {
+            View b = step(false, "The remote's mic isn't set up",
+                    "So voice search won't hear you. Fix: Settings > Remotes & Accessories, forget " + mic.broken
+                            + ", then hold Back + Home until its light blinks.",
+                    "Open settings", v -> openSettings(Settings.ACTION_BLUETOOTH_SETTINGS));
+            if (first == null) first = b;
         }
         // 5. Which button opens the input menu (InputKey: Input or ★, the same button on different remotes, plus one
         // from another remote if added).
