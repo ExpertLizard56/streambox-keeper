@@ -323,7 +323,8 @@ public class MainActivity extends Activity {
 
     private String keepSettingsWords() {
         StringBuilder s = new StringBuilder("After a system update, puts back the settings it reset: frame rate matching,"
-                + " HDR output, screen saver, home screen and the TV remote helper. Your own changes are kept.");
+                + " HDR output, screen saver, home screen, the TV remote helper and the apps you turned off. Your own changes"
+                + " are kept.");
         if (!Features.on(this, Features.KEEP_SETTINGS)) return s.toString();
         java.util.Map<String, String> kept = KeepSettings.remembered(this);
         if (kept.isEmpty()) {
@@ -331,7 +332,8 @@ public class MainActivity extends Activity {
         } else {
             s.append("\nRemembered:");
             for (java.util.Map.Entry<String, String> e : kept.entrySet()) {
-                s.append("\n  ").append(KeptSettings.label(e.getKey())).append(": ").append(e.getValue());
+                s.append("\n  ").append(KeptSettings.label(e.getKey())).append(": ")
+                        .append(KeptSettings.shown(e.getKey(), e.getValue()));
             }
         }
         String fix = getSharedPreferences("keeper", MODE_PRIVATE).getString("lastSettingsFix", null);

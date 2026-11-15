@@ -96,4 +96,37 @@ public class KeptSettingsTest {
         assertFalse(KeptSettings.parse("home=android/com.android.internal.app.ResolverActivity\n", PKG)
                 .containsKey(KeptSettings.HOME));
     }
+
+    private static Map<String, String> off(String apps) {
+        Map<String, String> m = new HashMap<>();
+        if (apps != null) m.put(KeptSettings.APPS_OFF, apps);
+        return m;
+    }
+
+    @Test
+    public void appsTurnedOffOnTheSameFirmwareAreThePersonsChoice() {
+        KeptSettings.Decision d = KeptSettings.decide("fw1", off("a,b"), "fw1", off("b,c"));
+        assertTrue(d.putBack.isEmpty());
+        assertEquals("b,c", d.remember.get(KeptSettings.APPS_OFF));
+    }
+
+    @Test
+    public void aFirmwareUpdateTurnsRememberedAppsOffAgain() {
+        KeptSettings.Decision d = KeptSettings.decide("fw1", off("a,b,c"), "fw2", off("b"));
+        assertEquals("a,c", d.putBack.get(KeptSettings.APPS_OFF));
+        assertEquals("a,b,c", d.remember.get(KeptSettings.APPS_OFF));
+        assertTrue(KeptSettings.decide("fw1", off("a"), "fw2", off("a,d")).putBack.isEmpty());
+    }
+
+    @Test
+    public void anUnreadAppListIsNeverNone() {
+        KeptSettings.Decision d = KeptSettings.decide("fw1", off("a,b"), "fw2", off(null));
+        assertTrue(d.putBack.isEmpty());
+        assertEquals("a,b", d.remember.get(KeptSettings.APPS_OFF));
+        assertFalse(KeptSettings.parse("fp=x\n", PKG).containsKey(KeptSettings.APPS_OFF));
+        assertEquals("", KeptSettings.parse("fp=x\noff=\n", PKG).get(KeptSettings.APPS_OFF));
+        assertEquals("a.b,c.d", KeptSettings.parse("off=c.d,a.b,\n", PKG).get(KeptSettings.APPS_OFF));
+        assertEquals("2 apps", KeptSettings.shown(KeptSettings.APPS_OFF, "a,b"));
+        assertEquals("none", KeptSettings.shown(KeptSettings.APPS_OFF, ""));
+    }
 }

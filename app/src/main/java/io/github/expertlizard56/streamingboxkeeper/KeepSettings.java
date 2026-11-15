@@ -11,7 +11,8 @@ import java.util.Map;
  * leaves the person's own changes alone. KeptSettings decides; this reads (one shell call) and writes through the box's
  * own ADB (SelfAdb), at each Check and when the switch goes on. Watched: match_content_frame_rate, hdr_conversion_mode
  * (read only at boot: the box isn't restarted for it, the screen says it takes effect at the next restart),
- * screensaver_components, the Home app, and StreamBox Keeper's own TV remote in the accessibility list.
+ * screensaver_components, the Home app, StreamBox Keeper's own TV remote in the accessibility list, and the apps the
+ * person turned off (turned off again after a firmware update turns them back on).
  */
 final class KeepSettings {
 
@@ -23,7 +24,11 @@ final class KeepSettings {
             + "; echo saver=$(settings get secure screensaver_components)"
             + "; echo a11y=$(" + A11Y + ")"
             + "; echo home=$(cmd package resolve-activity --brief -a android.intent.action.MAIN"
-            + " -c android.intent.category.HOME | tail -n 1)";
+            + " -c android.intent.category.HOME | tail -n 1)"
+            // The apps turned off by a person (enabled=3), not the ones the firmware keeps off (enabled=2). No "off="
+            // line at all if the list couldn't be read, so a failed read never looks like "none turned off".
+            + "; d=$(pm list packages -d) && echo off=$(for p in $(echo \"$d\" | cut -d: -f2); do"
+            + " dumpsys package $p 2>/dev/null | grep -m1 'User 0:' | grep -q 'enabled=3' && printf '%s,' $p; done)";
 
     private KeepSettings() {
     }
@@ -54,7 +59,18 @@ final class KeepSettings {
         boolean hdr = false;
         for (Map.Entry<String, String> back : d.putBack.entrySet()) {
             try {
-                SelfAdb.shell(context, command(context, back.getKey(), back.getValue(), pkg));
+                String out = SelfAdb.shell(context, command(context, back.getKey(), back.getValue(), pkg));
+                if (KeptSettings.APPS_OFF.equals(back.getKey())) {
+                    // The command prints each app it turned off; one that's gone from the box is forgotten.
+                    java.util.TreeSet<String> offAgain = KeptSettings.set(out.replace("\r", "").replace('\n', ','));
+                    java.util.TreeSet<String> keep = KeptSettings.set(read.get(KeptSettings.APPS_OFF));
+                    keep.addAll(offAgain);
+                    d.remember.put(KeptSettings.APPS_OFF, KeptSettings.join(keep));
+                    if (offAgain.isEmpty()) continue;
+                    if (done.length() > 0) done.append(", ");
+                    done.append("turned off again: ").append(KeptSettings.join(offAgain).replace(",", ", "));
+                    continue;
+                }
                 if (done.length() > 0) done.append(", ");
                 done.append(KeptSettings.label(back.getKey())).append(" back to ").append(back.getValue());
                 hdr |= KeptSettings.HDR.equals(back.getKey());
@@ -101,6 +117,12 @@ final class KeepSettings {
                 return "settings put secure enabled_accessibility_services "
                         + quote(KeptSettings.withHelper(list, pkg, pkg + "/.LinkService", on))
                         + (on ? "; settings put secure accessibility_enabled 1" : "");
+            case KeptSettings.APPS_OFF:
+                StringBuilder names = new StringBuilder();
+                for (String p : KeptSettings.set(value)) names.append(' ').append(quote(p));
+                // Prints each one Android turned off; an app no longer on the box just fails quietly.
+                return "for p in" + names + "; do pm disable-user --user 0 \"$p\" 2>/dev/null"
+                        + " | grep -q 'new state' && echo \"$p\"; done; true";
             default: throw new IllegalArgumentException(key);
         }
     }

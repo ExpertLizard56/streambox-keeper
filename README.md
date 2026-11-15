@@ -21,7 +21,8 @@ the box while it sleeps.
 - **Remote mic check.** If the remote's buttons work but Google TV never set up its mic (so voice search hears
   nothing), the app's screen says so and how to fix it: forget the remote and pair it again.
 - **Keep my settings (optional).** After a system update, puts back the box settings it reset (frame rate
-  matching, HDR output, screen saver, home screen, the TV remote helper) to what you had. Changes you make yourself
+  matching, HDR output, screen saver, home screen, the TV remote helper) to what you had, and turns back off
+  any app you'd turned off that the update turned back on. Changes you make yourself
   are kept: it remembers your box as it is, nothing is preset.
 - **Disable remote buttons.** Press a remote button on its page to disable it, such as an app button for an app
   you don't have (which would open the Play Store).
